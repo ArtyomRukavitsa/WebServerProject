@@ -20,7 +20,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
                               index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
 
-    library = orm.relation("Library", back_populates='user')
+    # library = orm.relation("Library", back_populates='user')
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)

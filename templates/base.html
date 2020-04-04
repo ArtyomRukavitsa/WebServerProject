@@ -12,9 +12,14 @@
       <nav class="navbar navbar-light bg-light">
           <h1>Книжный магазин</h1>
         <a class="navbar-brand" href="#">Mars One</a>
-
+    {% if current_user.is_authenticated %}
+          <a class="navbar-brand" href="/logout">{{ current_user.nickname }}</a>
+    {% else %}
+        <p>
         <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
         <a class="btn btn-success" href="/login">Войти</a>
+        </p>
+{% endif %}
       </nav>
 
     </header>
