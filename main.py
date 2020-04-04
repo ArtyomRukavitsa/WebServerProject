@@ -3,6 +3,9 @@ from data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required
 from forms import RegisterForm, LoginForm
 from data.users import User
+from data.books import Books
+from data.author import Author
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'WEB_SERVER_project'
@@ -14,12 +17,6 @@ login_manager.init_app(app)
 def load_user(user_id):
     session = db_session.create_session()
     return session.query(User).get(user_id)
-
-
-# Запуск программы
-def main():
-    db_session.global_init("db/book_shop.sqlite")
-    app.run()
 
 
 # Главная: обдумать, что будет!
@@ -80,6 +77,11 @@ def logout():
     logout_user()
     return redirect("/")
 
+
+# Запуск программы
+def main():
+    db_session.global_init("db/book_shop.sqlite")
+    app.run()
 
 if __name__ == '__main__':
     main()
