@@ -21,7 +21,7 @@ class LoginForm(FlaskForm):
 
 
 class BooksForm(FlaskForm):
-    author_id = IntegerField('Id автора', validators=[DataRequired()])
+    author = StringField('Фамилия автора', validators=[DataRequired()])
     title = StringField('Название книги', validators=[DataRequired()])
     date = IntegerField('Дата создания книги', validators=[DataRequired()])
     cover = StringField('Обложка книги')

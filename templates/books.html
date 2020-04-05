@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+
 {% block content %}
  <h1>Library</h1>
  {% for item in books%}
@@ -20,18 +23,15 @@
        <td>{{item.date}}</td>
        <td>{{item.cover}}</td>
      </tr>
-    {% if current_user.is_authenticated and current_user.id == 1 %}
-         <tr>
-             <td>
-             <a href="/books/{{ item.id }}" class="btn btn-warning">Изменить</a>
-             </td>
-             <td>
-             <a href="/books_delete/{{ item.id }}" class="btn btn-danger">Удалить</a>
-             </td>
-         </tr>
-     {% endif %}
    </tbody>
+
  </table>
-{%endfor%}
+{% if current_user.is_authenticated and current_user.id == 1 %}
+    <div>
+        <a href="/books/{{ item.id }}" class="btn btn-warning">Изменить</a>
+        <a href="/books_delete/{{ item.id }}" class="btn btn-danger">Удалить</a>
+    </div>
+     {% endif %}
+{% endfor %}
 
 {%endblock%}

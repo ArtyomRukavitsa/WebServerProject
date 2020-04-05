@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, abort
+from flask import Flask, render_template, redirect, abort, request
 from data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from forms import RegisterForm, LoginForm, BooksForm
@@ -80,10 +80,10 @@ def logout():
 # Отображение всех книг
 @app.route('/books')
 def books():
-     session = db_session.create_session()
-     books = session.query(Books).all()
-     author = session.query(Author)
-     return render_template('books.html', books=books, author=author)
+    session = db_session.create_session()
+    books = session.query(Books).all()
+    author = session.query(Author)
+    return render_template('books.html', books=books, author=author)
 
 
 @app.route('/books_delete/<int:id>', methods=['GET', 'POST'])
@@ -108,7 +108,8 @@ def addbooks():
     session = db_session.create_session()
     if form.validate_on_submit():
         if session:
-            book = Books(author_id=form.author_id.data,
+            book = Books(
+            author_id=form.author_id.data,
             title=form.title.data,
             cover=form.cover.data,
             date=form.date.data
@@ -120,10 +121,42 @@ def addbooks():
     return render_template('addbooks.html', title='Добавление книги', form=form)
 
 
+@app.route('/books/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_job(id):
+    form = BooksForm()
+    if request.method == "GET":
+        session = db_session.create_session()
+        book = session.query(Books).filter(Books.id == id,
+                                          current_user.id == 1).first()
+        if book:
+            form.author.data = book.author
+            form.title.data = book.title
+            form.date.data = book.date
+            form.cover.data = book.cover
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        session = db_session.create_session()
+        book = session.query(Books).filter(Books.id == id,
+                                          current_user.id == 1).first()
+        if book:
+            book.author = form.author.data
+            book.title = form.title.data
+            book.date = form.date.data
+            book.cover = form.cover.data
+            session.commit()
+            return redirect('/')
+        else:
+            abort(404)
+    return render_template('addbook.html', title='Редактирование книги', form=form)
+
+
 # Запуск программы
 def main():
     db_session.global_init("db/book_shop.sqlite")
     app.run()
+
 
 if __name__ == '__main__':
     main()
