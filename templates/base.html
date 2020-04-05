@@ -23,8 +23,10 @@
       </nav>
         {% if current_user.is_authenticated %}
          <a class="btn btn-primary" href="/addbooks">Добавить книгу</a>
+        <a class="btn btn-primary" href="/addauthor">Добавить автора</a>
      {% endif %}
         <a class="btn btn-primary" href="/books">Просмотр книг</a>
+        <a class="btn btn-primary" href="/authors">Просмотр авторов</a>
     </header>
     <!-- Begin page content -->
     <main role="main" class="container">

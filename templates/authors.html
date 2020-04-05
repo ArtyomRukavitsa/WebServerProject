@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+ <h1>Library</h1>
+ {% for item in authors%}
+ <h2>Author №{{item.id}}</h2>
+    <table class="table table-bordered">
+   <thead>
+     <tr class="table-info">
+       <th scope="col">Name</th>
+       <th scope="col">Surname</th>
+       <th scope="col">Years</th>
+       <th scope="col">Books</th>
+       <!--<th scope="col">Is finished можно сделать остаток на складе</th>-->
+     </tr>
+   </thead>
+   <tbody>
+     <tr class="table-warning">
+         <td>{{item.name}}</td>
+       <td>{{item.surname}}</td>
+       <td>{{item.years}}</td>
+       <td>{{item.list_of_books}}</td>
+     </tr>
+   </tbody>
+
+ </table>
+{% if current_user.is_authenticated and current_user.id == 1 %}
+    <div>
+        <a href="/authors/{{ item.id }}" class="btn btn-warning">Изменить</a>
+        <a href="/author_delete/{{ item.id }}" class="btn btn-danger">Удалить</a>
+    </div>
+     {% endif %}
+{% endfor %}
+
+{%endblock%}

@@ -26,3 +26,11 @@ class BooksForm(FlaskForm):
     date = IntegerField('Дата создания книги', validators=[DataRequired()])
     cover = StringField('Обложка книги')
     submit = SubmitField('Добавить книгу')
+
+
+class AuthorForm(FlaskForm):
+    name = StringField('Имя', validators=[DataRequired()])
+    surname = StringField('Фамилия', validators=[DataRequired()])
+    years = StringField('Годы жизни (в формате YEAR-YEAR)')
+    list_of_books = StringField('Список сочиненных книг')
+    submit = SubmitField('Добавить автора')

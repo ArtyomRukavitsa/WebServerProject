@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, abort, request
 from data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from forms import RegisterForm, LoginForm, BooksForm
+from forms import RegisterForm, LoginForm, BooksForm, AuthorForm
 from data.users import User
 from data.books import Books
 from data.author import Author
@@ -77,6 +77,49 @@ def logout():
     logout_user()
     return redirect("/")
 
+
+# Отображение всех писателей
+@app.route('/authors')
+def authors():
+    session = db_session.create_session()
+    author = session.query(Author)
+    return render_template('authors.html', authors=author)
+
+
+# Добавление писателя (только админ)
+@app.route('/addauthor', methods=['GET', 'POST'])
+@login_required
+def addauthor():
+    form = AuthorForm()
+    session = db_session.create_session()
+    if form.validate_on_submit():
+        if session:
+            author = Author(
+            name=form.name.data,
+            surname=form.surname.data,
+            years=form.years.data,
+            list_of_books=form.list_of_books.data
+            )
+            session.add(author)
+            session.commit()
+            return redirect("/")
+        return redirect('/logout')
+    return render_template('addauthor.html', title='Добавление писателя', form=form)
+
+@app.route('/author_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def author_delete(id):
+    session = db_session.create_session()
+    author = session.query(Author).filter(Author.id == id,
+                                   current_user.id == 1).first()
+    if author:
+        session.delete(author)
+        session.commit()
+    else:
+        abort(404)
+    return redirect('/')
+
+
 # Отображение всех книг
 @app.route('/books')
 def books():
@@ -106,10 +149,11 @@ def books_delete(id):
 def addbooks():
     form = BooksForm()
     session = db_session.create_session()
+    author = session.query(Author)
     if form.validate_on_submit():
         if session:
             book = Books(
-            author_id=form.author_id.data,
+            author_id=author.filter(Author.surname == form.author.data).first().id,
             title=form.title.data,
             cover=form.cover.data,
             date=form.date.data

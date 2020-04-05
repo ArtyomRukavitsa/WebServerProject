@@ -1,41 +1,41 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Добавление книги</h1>
+<h1>Добавление автора</h1>
 <form action="" method="post">
     {{ form.hidden_tag() }}
     {{ form.csrf_token }}
     <p>
-        {{ form.author.label }}<br>
-        {{ form.author(class="form-control") }}<br>
-        {% for error in form.author.errors %}
+        {{ form.name.label }}<br>
+        {{ form.name(class="form-control") }}<br>
+        {% for error in form.name.errors %}
             <p class="alert alert-danger" role="alert">
                 {{ error }}
             </p>
         {% endfor %}
     </p>
     <p>
-        {{ form.title.label }}<br>
-        {{ form.title(class="form-control") }}<br>
-        {% for error in form.title.errors %}
+        {{ form.surname.label }}<br>
+        {{ form.surname(class="form-control") }}<br>
+        {% for error in form.surname.errors %}
             <p class="alert alert-danger" role="alert">
                 {{ error }}
             </p>
         {% endfor %}
     </p>
     <p>
-        {{ form.date.label }}<br>
-        {{ form.date(class="form-control") }}<br>
-        {% for error in form.date.errors %}
+        {{ form.years.label }}<br>
+        {{ form.years(class="form-control") }}<br>
+        {% for error in form.years.errors %}
             <p class="alert alert-danger" role="alert">
                 {{ error }}
             </p>
         {% endfor %}
     </p>
     <p>
-        {{ form.cover.label }}<br>
-        {{ form.cover(class="form-control") }}<br>
-        {% for error in form.cover.errors %}
+        {{ form.list_of_books.label }}<br>
+        {{ form.list_of_books(class="form-control") }}<br>
+        {% for error in form.list_of_books.errors %}
             <p class="alert alert-danger" role="alert">
                 {{ error }}
             </p>

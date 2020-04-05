@@ -3,18 +3,20 @@ h4 {
     padding: 20px;
 }
 
+h1 {
+    color: #ffe4e1;
+}
+
 body
 {
     background-image: url('bg2.jpg');
 }
-h1
-{
-   color: #c0c0c0
-}
+
 h2
 {
    color: #c0c0c0
 }
+
 p
 {
    color: #c0c0c0
