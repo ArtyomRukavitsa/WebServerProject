@@ -1,0 +1,37 @@
+{% block content %}
+ <h1>Library</h1>
+ {% for item in books%}
+ <h2>Book №{{item.id}}</h2>
+    {%set user = author.filter(author.id == item.author_id).first()%}
+    <table class="table table-bordered">
+   <thead>
+     <tr class="table-info">
+       <th scope="col">Author</th>
+       <th scope="col">Title</th>
+       <th scope="col">Date</th>
+       <th scope="col">Cover</th>
+       <!--<th scope="col">Is finished можно сделать остаток на складе</th>-->
+     </tr>
+   </thead>
+   <tbody>
+     <tr class="table-warning">
+         <td>{{user.name user.surname}}</td>
+       <td>{{item.title}}</td>
+       <td>{{item.date}}</td>
+       <td>{{item.cover}}</td>
+     </tr>
+    {% if current_user.is_authenticated and current_user.id == 1 %}
+         <tr>
+             <td>
+             <a href="/books/{{ item.id }}" class="btn btn-warning">Изменить</a>
+             </td>
+             <td>
+             <a href="/books_delete/{{ item.id }}" class="btn btn-danger">Удалить</a>
+             </td>
+         </tr>
+     {% endif %}
+   </tbody>
+ </table>
+{%endfor%}
+
+{%endblock%}

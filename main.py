@@ -1,7 +1,7 @@
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, abort
 from data import db_session
-from flask_login import LoginManager, login_user, logout_user, login_required
-from forms import RegisterForm, LoginForm
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from forms import RegisterForm, LoginForm, BooksForm
 from data.users import User
 from data.books import Books
 from data.author import Author
@@ -76,6 +76,48 @@ def login():
 def logout():
     logout_user()
     return redirect("/")
+
+# Отображение всех книг
+@app.route('/books')
+def books():
+     session = db_session.create_session()
+     books = session.query(Books).all()
+     author = session.query(Author)
+     return render_template('books.html', books=books, author=author)
+
+
+@app.route('/books_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def books_delete(id):
+    session = db_session.create_session()
+    books = session.query(Books).filter(Books.id == id,
+                                   current_user.id == 1).first()
+    if books:
+        session.delete(books)
+        session.commit()
+    else:
+        abort(404)
+    return redirect('/')
+
+
+# Добавление книги (только админ)
+@app.route('/addbooks', methods=['GET', 'POST'])
+@login_required
+def addbooks():
+    form = BooksForm()
+    session = db_session.create_session()
+    if form.validate_on_submit():
+        if session:
+            book = Books(author_id=form.author_id.data,
+            title=form.title.data,
+            cover=form.cover.data,
+            date=form.date.data
+            )
+            session.add(book)
+            session.commit()
+            return redirect("/")
+        return redirect('/logout')
+    return render_template('addbooks.html', title='Добавление книги', form=form)
 
 
 # Запуск программы

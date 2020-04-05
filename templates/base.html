@@ -21,7 +21,10 @@
         </p>
 {% endif %}
       </nav>
-
+        {% if current_user.is_authenticated %}
+         <a class="btn btn-primary" href="/addbooks">Добавить книгу</a>
+     {% endif %}
+        <a class="btn btn-primary" href="/books">Просмотр книг</a>
     </header>
     <!-- Begin page content -->
     <main role="main" class="container">

@@ -12,7 +12,7 @@ class Books(SqlAlchemyBase, SerializerMixin):
                            primary_key=True, autoincrement=True)
     author_id = sqlalchemy.Column(sqlalchemy.Integer,
                                     sqlalchemy.ForeignKey("author.id"))  # связывем книгу с автором
-    name_of_book = sqlalchemy.Column(sqlalchemy.String, nullable=False)  # название книги
+    title = sqlalchemy.Column(sqlalchemy.String, nullable=False)  # название книги
     date = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)    # дата издания
     cover = sqlalchemy.Column(sqlalchemy.String, nullable=False)  # обложка книги
 
