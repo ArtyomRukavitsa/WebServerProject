@@ -5,7 +5,6 @@
  <h1>Library</h1>
  {% for item in books%}
  <h2>Book №{{item.id}}</h2>
-    {%set user = author.filter(author.id == item.author_id)%}
     <table class="table table-bordered">
    <thead>
      <tr class="table-info">
@@ -18,7 +17,7 @@
    </thead>
    <tbody>
      <tr class="table-warning">
-         <td>{{user.name}} {{user.surname}}</td>
+         <td>{{names[loop.index0]}} {{surnames[loop.index0]}}</td>
        <td>{{item.title}}</td>
        <td>{{item.date}}</td>
        <td><img src="/static/img/book{{loop.index}}.jpg"></td>

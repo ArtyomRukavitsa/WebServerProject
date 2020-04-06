@@ -5,6 +5,7 @@ from forms import RegisterForm, LoginForm, BooksForm, AuthorForm
 from data.users import User
 from data.books import Books
 from data.author import Author
+import os
 
 
 app = Flask(__name__)
@@ -106,6 +107,7 @@ def addauthor():
         return redirect('/logout')
     return render_template('addauthor.html', title='Добавление писателя', form=form)
 
+
 @app.route('/author_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
 def author_delete(id):
@@ -125,8 +127,13 @@ def author_delete(id):
 def books():
     session = db_session.create_session()
     books = session.query(Books).all()
-    author = session.query(Author)
-    return render_template('books.html', books=books, author=author)
+    names, surnames = [], []
+    for book in session.query(Books).all():
+        author = session.query(Author).filter(Author.id == book.author_id).first()
+        names.append(author.name)
+        surnames.append(author.surname)
+    print(names)
+    return render_template('books.html', books=books, names=names, surnames=surnames)
 
 
 @app.route('/books_delete/<int:id>', methods=['GET', 'POST'])
@@ -138,6 +145,7 @@ def books_delete(id):
     if books:
         session.delete(books)
         session.commit()
+        os.remove(f'static/img/book{books.id}.jpg')
     else:
         abort(404)
     return redirect('/')
@@ -162,7 +170,7 @@ def addbooks():
             session.add(book)
             session.commit()
             book = session.query(Books).filter(Books.title == form.title.data).first()
-            photo = f"static/img/book{book.id}.jpg"
+            photo = f"book{book.id}.jpg"
             f = request.files['file']
             with open(photo, "wb") as file:
                 file.write(f.read())
