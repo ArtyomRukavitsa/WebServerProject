@@ -155,10 +155,18 @@ def addbooks():
             book = Books(
             author_id=author.filter(Author.surname == form.author.data).first().id,
             title=form.title.data,
-            cover=form.cover.data,
             date=form.date.data
             )
+            book.cover = 'string'  # заглушка
+            # Идея: создаю новую книгу, но заранее мне неизвестен ее id для корректного названия книги
             session.add(book)
+            session.commit()
+            book = session.query(Books).filter(Books.title == form.title.data).first()
+            photo = f"static/img/book{book.id}.jpg"
+            f = request.files['file']
+            with open(photo, "wb") as file:
+                file.write(f.read())
+            book.cover = photo
             session.commit()
             return redirect("/")
         return redirect('/logout')

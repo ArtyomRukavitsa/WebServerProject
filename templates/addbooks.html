@@ -2,7 +2,8 @@
 
 {% block content %}
 <h1>Добавление книги</h1>
-<form action="" method="post">
+<form class="login_form" method="post" enctype="multipart/form-data">
+    <div class="form-group">
     {{ form.hidden_tag() }}
     {{ form.csrf_token }}
     <p>
@@ -32,16 +33,9 @@
             </p>
         {% endfor %}
     </p>
-    <p>
-        {{ form.cover.label }}<br>
-        {{ form.cover(class="form-control") }}<br>
-        {% for error in form.cover.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{ error }}
-            </p>
-        {% endfor %}
-    </p>
+    <input type="file" class="form-control-file" id="photo" name="file">
     <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
     {{message}}
+    </div>
 </form>
 {% endblock %}
