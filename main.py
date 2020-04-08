@@ -120,6 +120,36 @@ def author_delete(id):
     return redirect('/')
 
 
+@app.route('/authors/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_authors(id):
+    form = AuthorForm()
+    if request.method == "GET":
+        session = db_session.create_session()
+        author = session.query(Author).filter(Author.id == id,
+                                          current_user.id == 1).first()
+        if author:
+            form.name.data = author.name
+            form.surname.data = author.surname
+            form.years.data = author.years
+            form.list_of_books.data = author.list_of_books
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        session = db_session.create_session()
+        author = session.query(Author).filter(Author.id == id,
+                                              current_user.id == 1).first()
+        if author:
+            author.name = form.name.data
+            author.surname = form.surname.data
+            author.years = form.years.data
+            author.list_of_books = form.list_of_books.data
+            session.commit()
+            return redirect('/authors')
+        else:
+            abort(404)
+    return render_template('addauthor.html', title='Редактирование авторов', form=form)
+
 # Отображение всех книг
 @app.route('/books')
 def books():
