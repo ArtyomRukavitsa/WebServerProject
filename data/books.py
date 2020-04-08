@@ -15,5 +15,4 @@ class Books(SqlAlchemyBase, SerializerMixin):
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)  # название книги
     date = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)    # дата издания
     cover = sqlalchemy.Column(sqlalchemy.String, nullable=False)  # обложка книги
-
     author = orm.relation("Author")
