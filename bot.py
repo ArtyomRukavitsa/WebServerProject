@@ -3,9 +3,13 @@ from discord.ext import commands
 from data.auth_data import DC_TOKEN
 import discord
 import os
+from bs4 import BeautifulSoup
+import wikipedia
 
 
 TOKEN = DC_TOKEN
+wikipedia.set_lang('ru')
+
 
 def get_ll(toponym):
     toponym_coodrinates = toponym["Point"]["pos"]
@@ -31,7 +35,6 @@ def search_bookshop(toponym):
     response = requests.get(search_api_server, params=search_params)
     if response:
         json_response = response.json()
-        print(json_response)
         org_point = ''  # переменная содержит координаты всех десяти аптек
         for i in range(4):
             organization = json_response["features"][i]
@@ -65,9 +68,18 @@ class BookBot(commands.Cog):
             colour=discord.Colour.blue()
         )
         embed.set_author(name='Что бот умеет?')
-        embed.add_field(name='!!find_shops',
-                        value='Введи свой адрес и бот вышлет карту с координатами четырех ближайших книжных магазинов',
-                        inline=True)
+        embed.add_field(name='**!!find_shops**',
+                        value='Введи свой адрес, а бот вышлет карту с координатами четырех ближайших книжных магазинов',
+                        inline=False)
+        embed.add_field(name='**!!15_best_fantasy**',
+                        value='Бот вышлет 15 лучших книг и их авторов в жанре фэнтези',
+                        inline=False)
+        embed.add_field(name='**!!10_popular_authors**',
+                        value='Бот вышлет 10 самых популярных писателей в мире и ссылки в Википедии на них',
+                        inline=False)
+        embed.add_field(name='**!!wiki_author**',
+                        value='Введи автора, а бот вышлет короткую информацию о нем и ссылку в Википедии',
+                        inline=False)
 
         await channel.send(embed=embed)
 
@@ -99,6 +111,62 @@ class BookBot(commands.Cog):
         await channel.send(file=discord.File(map_file))
         await channel.send('\n'.join([f'{i + 1} - "{shops_names[i]}" {shops_addresses[i]}' for i in range(len(shops_names))]))
         os.remove(map_file)
+
+    @commands.command(name='15_best_fantasy')
+    async def best_fantasy(self, channel):
+        url = 'https://miridei.com/idei-dosuga/kakuyu-knigu-pochitat/top15_knig_v_zhanre_fentezi/'
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text, 'html.parser')
+        embed = discord.Embed(
+            title='**15 лучших книг в жанре фэнтези**',
+            url=url,
+            colour=discord.Colour.blue()
+        )
+        for i in soup.find_all('h2'):
+            index, book_and_author = i.get_text().split('.')
+            embed.add_field(name=index,
+                            value=book_and_author,
+                            inline=True)
+        await channel.send(embed=embed)
+
+    @commands.command(name='10_popular_authors')
+    async def popular_authors(self, channel):
+        url = 'https://infox.tv/posts/general/348/napisano-perom-10-russkih-pisateley-izvestnyh-vo-vsem-mire/'
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text, 'html.parser')
+        embed = discord.Embed(
+            title='**10 популярных русских писаталей в мире**',
+            url=url,
+            colour=discord.Colour.blue()
+        )
+        for i in soup.find_all('strong'):
+            index, book_author = i.get_text().split('.')
+            name, surname = book_author.split()
+            embed.add_field(name=f'**{index}. {book_author}**',
+                            value=f'https://ru.wikipedia.org/wiki/{name}_{surname}',
+                            inline=False)
+        await channel.send(embed=embed)
+
+    @commands.command(name='wiki_author')
+    async def wiki_author(self, channel, *author):
+        try:
+            name, surname = author
+            url = f'https://ru.wikipedia.org/wiki/{name}_{surname}'
+            embed = discord.Embed(
+                title=f'**Информация об авторе** (Википедия)',
+                url=url,
+                colour=discord.Colour.blue()
+            )
+            embed.add_field(name=f'**{name} {surname}**',
+                            value=wikipedia.summary(f'{author}', sentences=2),
+                            inline=True)
+            await channel.send(embed=embed)
+        except ValueError:
+            await channel.send("Напиши только имя и фамилию автора, пожалуйста!")
+        except wikipedia.exceptions.PageError:
+            await channel.send("Ошибочка, такой страницы нет!")
+        except wikipedia.exceptions.DisambiguationError:
+            await channel.send("Не могу определить автора, попробуй еще раз")
 
 
 bot = commands.Bot(command_prefix='!!')
