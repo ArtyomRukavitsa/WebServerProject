@@ -193,7 +193,8 @@ def addbooks():
             book = Books(
             author_id=author.filter(Author.surname == form.author.data).first().id,
             title=form.title.data,
-            date=form.date.data
+            date=form.date.data,
+            price=form.price.data
             )
             book.cover = 'string'  # заглушка
             # Идея: создаю новую книгу, но заранее мне неизвестен ее id для корректного названия книги
@@ -224,6 +225,7 @@ def edit_job(id):
             form.title.data = book.title
             form.date.data = book.date
             form.cover.data = book.cover
+            form.price.data = book.price
         else:
             abort(404)
     if form.validate_on_submit():
@@ -234,6 +236,7 @@ def edit_job(id):
             book.author = form.author.data
             book.title = form.title.data
             book.date = form.date.data
+            book.price = form.price.data
             book.cover = form.cover.data
             session.commit()
             return redirect('/')

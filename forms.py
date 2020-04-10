@@ -24,6 +24,7 @@ class BooksForm(FlaskForm):
     author = StringField('Фамилия автора', validators=[DataRequired()])
     title = StringField('Название книги', validators=[DataRequired()])
     date = IntegerField('Дата создания книги', validators=[DataRequired()])
+    price = IntegerField('Цена книги', validators=[DataRequired()])
     cover = StringField('Обложка книги')
     submit = SubmitField('Добавить книгу')
 

@@ -25,6 +25,15 @@
         {% endfor %}
     </p>
     <p>
+        {{ form.price.label }}<br>
+        {{ form.price(class="form-control") }}<br>
+        {% for error in form.price.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>
         {{ form.date.label }}<br>
         {{ form.date(class="form-control") }}<br>
         {% for error in form.date.errors %}

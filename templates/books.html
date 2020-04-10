@@ -11,6 +11,7 @@
        <th scope="col">Author</th>
        <th scope="col">Title</th>
        <th scope="col">Date</th>
+       <th scope="col">Price</th>
        <th scope="col">Cover</th>
        <!--<th scope="col">Is finished можно сделать остаток на складе</th>-->
      </tr>
@@ -18,8 +19,9 @@
    <tbody>
      <tr class="table-warning">
          <td>{{names[loop.index0]}} {{surnames[loop.index0]}}</td>
-       <td>{{item.title}}</td>
-       <td>{{item.date}}</td>
+         <td>{{item.title}}</td>
+         <td>{{item.date}}</td>
+         <td>{{item.price}}</td>
        <td><img src="/static/img/book{{loop.index}}.jpg"></td>
      </tr>
    </tbody>
