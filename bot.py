@@ -80,6 +80,9 @@ class BookBot(commands.Cog):
         embed.add_field(name='**!!wiki_author**',
                         value='Введи автора, а бот вышлет короткую информацию о нем и ссылку в Википедии',
                         inline=False)
+        embed.add_field(name='**!!wiki_book**',
+                        value='Введи автора, а бот вышлет короткую информацию о нем и ссылку в Википедии',
+                        inline=False)
 
         await channel.send(embed=embed)
 
@@ -163,6 +166,25 @@ class BookBot(commands.Cog):
             await channel.send(embed=embed)
         except ValueError:
             await channel.send("Напиши только имя и фамилию автора, пожалуйста!")
+        except wikipedia.exceptions.PageError:
+            await channel.send("Ошибочка, такой страницы нет!")
+        except wikipedia.exceptions.DisambiguationError:
+            await channel.send("Не могу определить автора, попробуй еще раз")
+
+    @commands.command(name='wiki_book')
+    async def wiki_book(self, channel, *book):
+        try:
+            book = '_'.join(book)
+            url = f'https://ru.wikipedia.org/wiki/{book}'
+            embed = discord.Embed(
+                title=f'**Информация об книге** (Википедия)',
+                url=url,
+                colour=discord.Colour.blue()
+            )
+            embed.add_field(name=f'**{book}**',
+                            value=wikipedia.summary(f'{book}', sentences=2),
+                            inline=True)
+            await channel.send(embed=embed)
         except wikipedia.exceptions.PageError:
             await channel.send("Ошибочка, такой страницы нет!")
         except wikipedia.exceptions.DisambiguationError:
