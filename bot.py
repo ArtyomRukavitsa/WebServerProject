@@ -81,7 +81,7 @@ class BookBot(commands.Cog):
                         value='Введи автора, а бот вышлет короткую информацию о нем и ссылку в Википедии',
                         inline=False)
         embed.add_field(name='**!!wiki_book**',
-                        value='Введи автора, а бот вышлет короткую информацию о нем и ссылку в Википедии',
+                        value='Введи название книги, а бот вышлет короткую информацию о ней и ссылку в Википедии',
                         inline=False)
 
         await channel.send(embed=embed)
