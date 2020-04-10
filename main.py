@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, abort, request
 from data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_restful import reqparse, abort, Api, Resource
 from forms import RegisterForm, LoginForm, BooksForm, AuthorForm
 from data.users import User
 from data.books import Books
@@ -12,6 +13,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'WEB_SERVER_project'
 login_manager = LoginManager()
 login_manager.init_app(app)
+api = Api(app)
 
 
 @login_manager.user_loader
@@ -232,7 +234,7 @@ def edit_book(id):
     if form.validate_on_submit():
         session = db_session.create_session()
         book = session.query(Books).filter(Books.id == id,
-                                          current_user.id == 1).first()
+                                           current_user.id == 1).first()
         if book:
             author = session.query(Author).filter(Author.surname == form.author.data).first()
             book.author_id = author.id
@@ -240,7 +242,6 @@ def edit_book(id):
             book.date = form.date.data
             book.price = form.price.data
             book.cover = form.cover.data
-
             session.commit()
             return redirect('/')
         else:
