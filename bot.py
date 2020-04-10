@@ -5,10 +5,15 @@ import discord
 import os
 from bs4 import BeautifulSoup
 import wikipedia
-
+from data.users import User
+from data.books import Books
+from data.author import Author
+from data import db_session
+import random
 
 TOKEN = DC_TOKEN
 wikipedia.set_lang('ru')
+db_session.global_init("db/book_shop.sqlite")
 
 
 def get_ll(toponym):
@@ -83,6 +88,17 @@ class BookBot(commands.Cog):
         embed.add_field(name='**!!wiki_book**',
                         value='Введи название книги, а бот вышлет короткую информацию о ней и ссылку в Википедии',
                         inline=False)
+        embed.add_field(name='**!!add_book**',
+                        value='Добавь книгу в наш магазин! Формат: фамилия автора, название, '
+                              'год создания, стоимость, url — ссылка на обложку книги',
+                        inline=False)
+        embed.add_field(name='**!!add_author**',
+                        value='Добавь автора книг в наш магазин! Формат: имя, фамилия, '
+                              'годы жизни (YEAR-YEAR), несколько его известных произведений через ; ',
+                        inline=False)
+        embed.add_field(name='**!!random_db_book**',
+                        value='Бот вышлет информацию о случайной книге из базы данных!',
+                        inline=False)
 
         await channel.send(embed=embed)
 
@@ -112,7 +128,8 @@ class BookBot(commands.Cog):
         with open(map_file, "wb") as file:
             file.write(response.content)
         await channel.send(file=discord.File(map_file))
-        await channel.send('\n'.join([f'{i + 1} - "{shops_names[i]}" {shops_addresses[i]}' for i in range(len(shops_names))]))
+        await channel.send(
+            '\n'.join([f'{i + 1} - "{shops_names[i]}" {shops_addresses[i]}' for i in range(len(shops_names))]))
         os.remove(map_file)
 
     @commands.command(name='15_best_fantasy')
@@ -189,6 +206,77 @@ class BookBot(commands.Cog):
             await channel.send("Ошибочка, такой страницы нет!")
         except wikipedia.exceptions.DisambiguationError:
             await channel.send("Не могу определить автора, попробуй еще раз")
+
+    @commands.command(name='random_db_book')
+    async def random_db_book(self, channel):
+        session = db_session.create_session()
+        books = session.query(Books).all()
+        book = books[random.randint(0, len(books) - 1)]
+        embed = discord.Embed(
+            title=f'**Информация о книге из базы данных!**',
+            colour=discord.Colour.blue()
+        )
+        embed.add_field(name=f'**Название**',
+                        value=book.title,
+                        inline=False)
+        author = session.query(Author).filter(Author.id == book.author_id).first()
+        embed.add_field(name=f'**Автор**',
+                        value=f"{author.name} {author.surname}",
+                        inline=False)
+        embed.add_field(name=f'**Год создания**',
+                        value=book.date,
+                        inline=False)
+        embed.add_field(name=f'**Стоимость в нашем магазине**',
+                        value=book.price,
+                        inline=False)
+        await channel.send(embed=embed, file=discord.File(f'static/img/book{book.id}.jpg'))
+
+    @commands.command(name='add_book')
+    async def add_book(self, channel, *content):
+        try:
+            surname, title, date, price, url = ' '.join(content).split(',')
+            surname, title, date, price, url = surname.strip(), title.strip(), date.strip(), price.strip(), url.strip()
+            session = db_session.create_session()
+            if session.query(Books).filter(Books.title == title).first():
+                await channel.send("Такая книга уже есть в БД")
+                return
+            book = Books(
+                author_id=session.query(Author).filter(Author.surname == surname).first().id,
+                title=title,
+                date=date,
+                price=price
+            )
+            response = requests.get(url)
+            len_books = len(session.query(Books).all())
+            photo = f'static/img/book{len_books + 1}.jpg'
+            with open(photo, 'wb') as imgfile:
+                imgfile.write(response.content)
+            book.cover = f'book{len_books + 1}.jpg'
+            session.add(book)
+            session.commit()
+            await channel.send('Ваша книга успешно добавлена')
+        except AttributeError:
+            await channel.send('Увы, но автора вашей книги не оказалось у нас в базе данных...'
+                               '\nДобавьте автора, а потом книгу!')
+
+    @commands.command(name='add_author')
+    async def add_author(self, channel, *content):
+        name, surname, years, books = ' '.join(content).split(',')
+        name, surname, years, books = name.strip(), surname.strip(), years.strip(), books.strip()
+        books = books.replace(';', ',').strip()
+        session = db_session.create_session()
+        if session.query(Author).filter(Author.surname == surname).first():
+            await channel.send('Автор с такой фамилией уже есть в БД')
+            return
+        author = Author(
+            name=name,
+            surname=surname,
+            years=years,
+            list_of_books=books
+        )
+        session.add(author)
+        session.commit()
+        await channel.send('Ваш автор успешно добавлен')
 
 
 bot = commands.Bot(command_prefix='!!')
