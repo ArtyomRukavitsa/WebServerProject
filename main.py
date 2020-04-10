@@ -214,14 +214,15 @@ def addbooks():
 
 @app.route('/books/<int:id>', methods=['GET', 'POST'])
 @login_required
-def edit_job(id):
+def edit_book(id):
     form = BooksForm()
     if request.method == "GET":
         session = db_session.create_session()
         book = session.query(Books).filter(Books.id == id,
                                           current_user.id == 1).first()
         if book:
-            form.author.data = book.author
+            author = session.query(Author).filter(Author.id == book.author_id).first()
+            form.author.data = author.surname
             form.title.data = book.title
             form.date.data = book.date
             form.cover.data = book.cover
@@ -233,16 +234,18 @@ def edit_job(id):
         book = session.query(Books).filter(Books.id == id,
                                           current_user.id == 1).first()
         if book:
-            book.author = form.author.data
+            author = session.query(Author).filter(Author.surname == form.author.data).first()
+            book.author_id = author.id
             book.title = form.title.data
             book.date = form.date.data
             book.price = form.price.data
             book.cover = form.cover.data
+
             session.commit()
             return redirect('/')
         else:
             abort(404)
-    return render_template('addbook.html', title='Редактирование книги', form=form)
+    return render_template('addbooks.html', title='Редактирование книги', form=form)
 
 
 # Запуск программы
