@@ -33,6 +33,11 @@
         <a href="/books_delete/{{ item.id }}" class="btn btn-danger">Удалить</a>
     </div>
      {% endif %}
+{% if current_user.is_authenticated and current_user.id != 1 %}
+    <div>
+        <a href="/books_buy/{{ item.id }}" class="btn btn-success">Купить</a>
+    </div>
+     {% endif %}
 {% endfor %}
 
 {%endblock%}

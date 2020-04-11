@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if not books %} <h3>У вас еще нет книг в корзине!</h3>
+{% else %}
+<h3>Ваш заказ</h3>
+{% for item in books %}
+<table class="table table-bordered">
+   <thead>
+     <tr class="table-info">
+       <th scope="col">Author</th>
+       <th scope="col">Title</th>
+       <th scope="col">Price</th>
+       <!--<th scope="col">Is finished можно сделать остаток на складе</th>-->
+     </tr>
+   </thead>
+   <tbody>
+     <tr class="table-warning">
+         <td>{{names[loop.index0]}} {{surnames[loop.index0]}}</td>
+         <td>{{item.title}}</td>
+         <td>{{item.price}}</td>
+     </tr>
+   </tbody>
+ </table>
+{% endfor %}
+<h3>Сумма вашего заказа: {{ cost }} рублей</h3>
+<div>
+    <a class="btn btn-primary " href="/buy">Купить</a>
+</div>
+{% endif%}
+<a class="btn btn-primary " href="/books">Продолжить покупки</a>
+{% endblock %}

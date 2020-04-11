@@ -76,7 +76,6 @@ def users():
     return render_template('users.html', users=users)
 
 
-
 # Страница регистрации
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
@@ -125,6 +124,10 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
+    session = db_session.create_session()
+    user = session.query(User).get(current_user.id)
+    user.bought = ''
+    session.commit()
     logout_user()
     return redirect("/")
 
@@ -214,6 +217,58 @@ def books():
         surnames.append(author.surname)
     print(names)
     return render_template('books.html', books=books, names=names, surnames=surnames)
+
+# Обрабочик кнопки "Купить книгу"
+@app.route('/books_buy/<int:book_id>')
+@login_required
+def books_buy(book_id):
+    session = db_session.create_session()
+    user = session.query(User).get(current_user.id)
+    if not user.bought:  # пользователь за сессию не положил в корзину ни одной книги
+        user.bought = ''
+    user.bought += str(book_id) + ', '
+    session.commit()
+    return redirect('/books')
+
+
+# Обрабочик Корзины
+@app.route('/basket')
+@login_required
+def basket():
+    session = db_session.create_session()
+    user = session.query(User).get(current_user.id)
+    books_id = user.bought.strip(', ')
+    names, surnames, books = [], [], []
+    cost = 0
+    if books_id:
+        for id in books_id.split(','):
+            book = session.query(Books).filter(Books.id == id).first()
+            author = session.query(Author).filter(Author.id == book.author_id).first()
+            names.append(author.name)
+            surnames.append(author.surname)
+            books.append(book)
+            cost += book.price
+    return render_template('basket.html', title='Корзина', books=books, names=names, surnames=surnames, cost=cost)
+
+
+# Обрабочик кнопки "Купить книгу"
+@app.route('/buy')
+@login_required
+def buy():
+    session = db_session.create_session()
+    user = session.query(User).get(current_user.id)
+    books_id = user.bought.strip(', ').split(',')
+    cost = 0
+    for id in books_id:
+        book = session.query(Books).filter(Books.id == id).first()
+        cost += book.price
+    if not user.total_sum:
+        user.total_sum = 0
+    user.total_sum += cost  # установка значения в колонку с общими затратами
+    user.bought = ''  # купленных книг в этой сессии уже нет
+    session.commit()
+    return redirect('/books')
+
 
 
 @app.route('/books_delete/<int:id>', methods=['GET', 'POST'])
