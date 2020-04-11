@@ -14,6 +14,7 @@ import random
 TOKEN = DC_TOKEN
 wikipedia.set_lang('ru')
 db_session.global_init("db/book_shop.sqlite")
+bot = commands.Bot(command_prefix='!!')
 
 
 def get_ll(toponym):
@@ -88,16 +89,24 @@ class BookBot(commands.Cog):
         embed.add_field(name='**!!wiki_book**',
                         value='Введи название книги, а бот вышлет короткую информацию о ней и ссылку в Википедии',
                         inline=False)
-        embed.add_field(name='**!!add_book**',
-                        value='Добавь книгу в наш магазин! Формат: фамилия автора, название, '
-                              'год создания, стоимость, url — ссылка на обложку книги',
+        embed.add_field(name='**!!add_book** (для админа)',
+                        value='Админ может добавит книгу в наш магазин.'
+                              '\n**Формат: фамилия автора, название, '
+                              'год создания, стоимость, url — ссылка на обложку книги**',
                         inline=False)
-        embed.add_field(name='**!!add_author**',
-                        value='Добавь автора книг в наш магазин! Формат: имя, фамилия, '
-                              'годы жизни (YEAR-YEAR), несколько его известных произведений через ; ',
+        embed.add_field(name='**!!add_author** (для админа)',
+                        value='Админ может добавить автора книг в наш магазин.'
+                              '\n**Формат: имя, фамилия, '
+                              'годы жизни (YEAR-YEAR), несколько его известных произведений через ;** ',
                         inline=False)
         embed.add_field(name='**!!random_db_book**',
                         value='Бот вышлет информацию о случайной книге из базы данных!',
+                        inline=False)
+        embed.add_field(name='**!!all_books**',
+                        value='Бот вышлет информацию о всех книгах из базы данных!',
+                        inline=False)
+        embed.add_field(name='**!!all_authors**',
+                        value='Бот вышлет информацию о всех авторах из базы данных!',
                         inline=False)
 
         await channel.send(embed=embed)
@@ -232,6 +241,7 @@ class BookBot(commands.Cog):
         await channel.send(embed=embed, file=discord.File(f'static/img/book{book.id}.jpg'))
 
     @commands.command(name='add_book')
+    @commands.has_role('admin')
     async def add_book(self, channel, *content):
         print(content)
         try:
@@ -261,6 +271,7 @@ class BookBot(commands.Cog):
                                '\nДобавьте автора, а потом книгу!')
 
     @commands.command(name='add_author')
+    @commands.has_role('admin')
     async def add_author(self, channel, *content):
         name, surname, years, books = ' '.join(content).split(',')
         name, surname, years, books = name.strip(), surname.strip(), years.strip(), books.strip()
@@ -279,7 +290,56 @@ class BookBot(commands.Cog):
         session.commit()
         await channel.send('Ваш автор успешно добавлен')
 
+    @commands.command(name='all_books')
+    async def all_books(self, channel):
+        session = db_session.create_session()
+        books = session.query(Books).all()
+        for book in books:
+            embed = discord.Embed(
+                title=f'**Информация о книге {book.id} из базы данных!**',
+                colour=discord.Colour.blue()
+            )
+            embed.add_field(name=f'**Название**',
+                            value=book.title,
+                            inline=False)
+            author = session.query(Author).filter(Author.id == book.author_id).first()
+            embed.add_field(name=f'**Автор**',
+                            value=f"{author.name} {author.surname}",
+                            inline=False)
+            embed.add_field(name=f'**Год создания**',
+                            value=book.date,
+                            inline=False)
+            embed.add_field(name=f'**Стоимость в нашем магазине**',
+                            value=book.price,
+                            inline=False)
+            await channel.send(embed=embed, file=discord.File(f'static/img/book{book.id}.jpg'))
 
-bot = commands.Bot(command_prefix='!!')
+    @commands.command(name='all_authors')
+    async def all_authors(self, channel):
+        session = db_session.create_session()
+        authors = session.query(Author).all()
+        for author in authors:
+            embed = discord.Embed(
+                title=f'**Информация об авторе {author.id} из базы данных!**',
+                colour=discord.Colour.blue()
+            )
+            embed.add_field(name=f'**Имя, фамилия**',
+                            value=f'{author.name} {author.surname}',
+                            inline=False)
+            embed.add_field(name=f'**Годы жизни**',
+                            value=f"{author.years}",
+                            inline=False)
+            embed.add_field(name=f'**Популярные книги автора**',
+                            value=author.list_of_books,
+                            inline=False)
+            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_command_error(self, channel, error):
+        if isinstance(error, commands.errors.MissingRole):
+            await channel.send('У вас нет прав доступа к данной команде.')
+
+
 bot.add_cog(BookBot(bot))
 bot.run(TOKEN)
+
