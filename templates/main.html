@@ -2,11 +2,24 @@
 
 {% block content %}
 <h1>Добро пожаловать в наш книжный магазин!</h1>
-<div class="input-group input-group-lg">
-  <div class="input-group-prepend">
-    <span class="input-group-text" id="inputGroup-sizing-lg">Введите запрос</span>
-  </div>
-  <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg">
-</div>
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+    <p>
+        <select class="custom-select" id="classSelect" name="req">
+          <option>Вывод пользователей (введите users)</option>
+          <option>Книга(введите название)</option>
+          <option>Автор(введите имя и фамилию)</option>
+        </select>
+        {{ form.message.label }}<br>
+        {{ form.message(class="form-control") }}<br>
+        {% for error in form.message.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <h1>{{ warning }}</h1>
+</form>
 
 {%endblock%}

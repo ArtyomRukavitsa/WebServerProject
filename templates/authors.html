@@ -4,7 +4,7 @@
 {% block content %}
  <h1>Library</h1>
  {% for item in authors%}
- <h2>Author №{{item.id}}</h2>
+ <h2>Author №{{authors.index(item) + 1}}</h2>
     <table class="table table-bordered">
    <thead>
      <tr class="table-info">
@@ -12,7 +12,6 @@
        <th scope="col">Surname</th>
        <th scope="col">Years</th>
        <th scope="col">Books</th>
-       <!--<th scope="col">Is finished можно сделать остаток на складе</th>-->
      </tr>
    </thead>
    <tbody>

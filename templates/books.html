@@ -4,7 +4,7 @@
 {% block content %}
  <h1>Library</h1>
  {% for item in books%}
- <h2>Book №{{item.id}}</h2>
+ <h2>Book №{{books.index(item) + 1}}</h2>
     <table class="table table-bordered">
    <thead>
      <tr class="table-info">
@@ -22,7 +22,7 @@
          <td>{{item.title}}</td>
          <td>{{item.date}}</td>
          <td>{{item.price}}</td>
-       <td><img src="/static/img/book{{loop.index}}.jpg"></td>
+       <td><img src="/static/img/book{{item.id}}.jpg"></td>
      </tr>
    </tbody>
 

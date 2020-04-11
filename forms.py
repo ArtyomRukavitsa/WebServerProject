@@ -35,3 +35,7 @@ class AuthorForm(FlaskForm):
     years = StringField('Годы жизни (в формате YEAR-YEAR)')
     list_of_books = StringField('Список сочиненных книг')
     submit = SubmitField('Добавить автора')
+
+
+class InputForm(FlaskForm):
+    message = StringField('')

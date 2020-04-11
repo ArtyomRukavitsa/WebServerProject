@@ -233,6 +233,7 @@ class BookBot(commands.Cog):
 
     @commands.command(name='add_book')
     async def add_book(self, channel, *content):
+        print(content)
         try:
             surname, title, date, price, url = ' '.join(content).split(',')
             surname, title, date, price, url = surname.strip(), title.strip(), date.strip(), price.strip(), url.strip()

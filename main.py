@@ -1,11 +1,14 @@
-from flask import Flask, render_template, redirect, abort, request
+from flask import Flask, render_template, redirect, abort, request, make_response, jsonify
 from data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_restful import reqparse, abort, Api, Resource
-from forms import RegisterForm, LoginForm, BooksForm, AuthorForm
+from forms import RegisterForm, LoginForm, BooksForm, AuthorForm, InputForm
 from data.users import User
 from data.books import Books
 from data.author import Author
+from data.users_recource import UsersListResource, UsersResource
+from data.books_resource import BooksResource, BooksListResource
+from data.author_resource import AuthorsResource, AuthorsListResource
 import os
 
 
@@ -23,10 +26,55 @@ def load_user(user_id):
 
 
 # Главная: обдумать, что будет!
-@app.route('/')
-@app.route('/main')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/main', methods=['GET', 'POST'])
 def index():
-    return render_template("main.html", title='Главная')
+    form = InputForm()
+    if form.validate_on_submit():
+        message = form.message.data
+        answer = request.form['req']
+        return sent(message, answer)
+    return render_template("main.html", title='Главная', form=form, warning='')
+
+
+@login_required
+def sent(message, answer):
+    answers = ['Вывод пользователей (введите users)', 'Книга(введите название)', 'Автор(введите имя и фамилию)']
+    a = answers.index(answer)
+    print(message, answer)
+    form = InputForm()
+    if a == 0:
+        if current_user.id == 1:
+            return redirect('/api/v1/users')
+        else:
+            return render_template("main.html", title='Главная', form=form, warning='Недостаточно прав')
+    elif a == 1:
+        session = db_session.create_session()
+        names, surnames = [], []
+        book = session.query(Books).filter(Books.title == message).first()
+        author = session.query(Author).filter(Author.id == book.author_id).first()
+        names.append(author.name)
+        surnames.append(author.surname)
+        return render_template('books.html', books=[book], names=names, surnames=surnames)
+    elif a == 2:
+        session = db_session.create_session()
+        name, surname = message.split()
+        author = session.query(Author).filter(Author.name == name, Author.surname == surname).first()
+        return render_template('authors.html', authors=[author])
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
+
+@app.route('/api/v1/users')
+@login_required
+def users():
+    session = db_session.create_session()
+    users = session.query(User).all()
+    return render_template('users.html', users=users)
+
 
 
 # Страница регистрации
@@ -85,7 +133,7 @@ def logout():
 @app.route('/authors')
 def authors():
     session = db_session.create_session()
-    author = session.query(Author)
+    author = session.query(Author).all()
     return render_template('authors.html', authors=author)
 
 
@@ -252,6 +300,12 @@ def edit_book(id):
 # Запуск программы
 def main():
     db_session.global_init("db/book_shop.sqlite")
+    api.add_resource(UsersListResource, '/api/v1/users')
+    api.add_resource(UsersResource, '/api/v1/users/<int:user_id>')
+    api.add_resource(BooksListResource, '/api/v1/books')
+    api.add_resource(BooksResource, '/api/v1/books/<int:books_id>')
+    api.add_resource(AuthorsListResource, '/api/v1/author')
+    api.add_resource(AuthorsResource, '/api/v1/books/<int:author_id>')
     app.run()
 
 

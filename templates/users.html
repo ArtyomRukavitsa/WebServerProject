@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+ <h1>Library</h1>
+ {% for item in users%}
+ <h2>User №{{users.index(item) + 1}}</h2>
+    <table class="table table-bordered">
+   <thead>
+     <tr class="table-info">
+       <th scope="col">Name</th>
+       <th scope="col">Surname</th>
+       <th scope="col">Nickname</th>
+       <th scope="col">Email</th>
+     </tr>
+   </thead>
+   <tbody>
+     <tr class="table-warning">
+         <td>{{item.name}}</td>
+       <td>{{item.surname}}</td>
+       <td>{{item.nickname}}</td>
+       <td>{{item.email}}</td>
+     </tr>
+   </tbody>
+
+ </table>
+{% endfor %}
+
+{%endblock%}
