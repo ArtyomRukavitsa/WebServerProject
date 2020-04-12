@@ -54,10 +54,11 @@ def sent(message, answer):
         session = db_session.create_session()
         book = session.query(Books).filter(Books.title == message).first()
         author = session.query(Author).filter(Author.id == book.author_id).first()
+        genre = session.query(Genre).filter(Genre.id == book.genre_id).first().genre
         b = "_".join(book.title.strip().split())
         url = f'https://ru.wikipedia.org/wiki/{b}'
         return render_template('books.html', books=[book], names=[author.name],
-                               surnames=[author.surname], extra_info=[url])
+                               surnames=[author.surname], extra_info=[url], genres=[genre])
     elif a == 2:
         session = db_session.create_session()
         name, surname = message.split()
@@ -257,7 +258,8 @@ def books():
     names, surnames, genres, extra_info = [], [], [], []
     for book in session.query(Books).all():
         author = session.query(Author).filter(Author.id == book.author_id).first()
-        genres = session.query(Genre).filter(Genre.id == book.genre_id).first()
+        genre = session.query(Genre).filter(Genre.id == book.genre_id).first()
+        genres.append(genre.genre)
         names.append(author.name)
         surnames.append(author.surname)
         b = "_".join(book.title.strip().split())

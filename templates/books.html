@@ -14,7 +14,7 @@
               <div class="bg-info text-white card-header" ><h5>{{book.title}}</h5></div>
               <div class="card-body">
                 <h5 class="card-text">{{names[loop.index0]}} {{surnames[loop.index0]}}</h5>
-                <h5 class="card-text">Жанр {{book.genre}}</h5>
+                <h5 class="card-text">Жанр: {{genres[loop.index0]}}</h5>
                 <h5 class="card-text">Дата издания: {{book.date}}</h5>
                 <h5 class="card-text">Цена: {{book.price}}</h5>
                 <a href="{{ extra_info[loop.index0] }}" class="btn btn-primary">Подробнее</a>
