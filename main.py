@@ -3,6 +3,7 @@ from data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_restful import reqparse, abort, Api, Resource
 from forms import RegisterForm, LoginForm, BooksForm, AuthorForm, InputForm
+import wikipedia
 from data.users import User
 from data.books import Books
 from data.author import Author
@@ -45,22 +46,23 @@ def sent(message, answer):
     form = InputForm()
     if a == 0:
         if current_user.id == 1:
-            return redirect('/api/v1/users')
+            return redirect('/request/users')
         else:
             return render_template("main.html", title='Главная', form=form, warning='Недостаточно прав')
     elif a == 1:
         session = db_session.create_session()
-        names, surnames = [], []
         book = session.query(Books).filter(Books.title == message).first()
         author = session.query(Author).filter(Author.id == book.author_id).first()
-        names.append(author.name)
-        surnames.append(author.surname)
-        return render_template('books.html', books=[book], names=names, surnames=surnames)
+        b = "_".join(book.title.strip().split())
+        url = f'https://ru.wikipedia.org/wiki/{b}'
+        return render_template('books.html', books=[book], names=[author.name],
+                               surnames=[author.surname], extra_info=[url])
     elif a == 2:
         session = db_session.create_session()
         name, surname = message.split()
         author = session.query(Author).filter(Author.name == name, Author.surname == surname).first()
-        return render_template('authors.html', authors=[author])
+        url = f'https://ru.wikipedia.org/wiki/{author.name} {author.surname}'
+        return render_template('authors.html', authors=[author], extra_info=[url])
 
 
 @app.errorhandler(404)
@@ -68,7 +70,7 @@ def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
-@app.route('/api/v1/users')
+@app.route('/request/users')
 @login_required
 def users():
     session = db_session.create_session()
@@ -136,8 +138,12 @@ def logout():
 @app.route('/authors')
 def authors():
     session = db_session.create_session()
-    author = session.query(Author).all()
-    return render_template('authors.html', authors=author)
+    authors = session.query(Author).all()
+    extra_info = []
+    for author in authors:
+        url = f'https://ru.wikipedia.org/wiki/{author.name} {author.surname}'
+        extra_info.append(url)
+    return render_template('authors.html', authors=authors, extra_info=extra_info)
 
 
 # Добавление писателя (только админ)
@@ -210,13 +216,16 @@ def edit_authors(id):
 def books():
     session = db_session.create_session()
     books = session.query(Books).all()
-    names, surnames = [], []
+    names, surnames, extra_info = [], [], []
     for book in session.query(Books).all():
         author = session.query(Author).filter(Author.id == book.author_id).first()
         names.append(author.name)
         surnames.append(author.surname)
-    print(names)
-    return render_template('books.html', books=books, names=names, surnames=surnames)
+        b = "_".join(book.title.strip().split())
+        url = f'https://ru.wikipedia.org/wiki/{b}'
+        extra_info.append(url)
+    return render_template('books.html', books=books, names=names, surnames=surnames, extra_info=extra_info)
+
 
 # Обрабочик кнопки "Купить книгу"
 @app.route('/books_buy/<int:book_id>')
