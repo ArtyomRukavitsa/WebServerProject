@@ -8,6 +8,7 @@ import wikipedia
 from data.users import User
 from data.books import Books
 from data.author import Author
+from data.genres import Genre
 from data import db_session
 import random
 
@@ -91,7 +92,7 @@ class BookBot(commands.Cog):
                         inline=False)
         embed.add_field(name='**!!add_book** (для админа)',
                         value='Админ может добавит книгу в наш магазин.'
-                              '\n**Формат: фамилия автора, название, '
+                              '\n**Формат: фамилия автора, название, жанр,'
                               'год создания, стоимость, url — ссылка на обложку книги**',
                         inline=False)
         embed.add_field(name='**!!add_author** (для админа)',
@@ -243,19 +244,23 @@ class BookBot(commands.Cog):
     @commands.command(name='add_book')
     @commands.has_role('admin')
     async def add_book(self, channel, *content):
-        print(content)
         try:
-            surname, title, date, price, url = ' '.join(content).split(',')
-            surname, title, date, price, url = surname.strip(), title.strip(), date.strip(), price.strip(), url.strip()
+            surname, title, date, genre, price, url = ' '.join(content).split(',')
+            surname, title, date, genre, price, url = surname.strip(), title.strip(), \
+                                                      genre.strip(), date.strip(), price.strip(), url.strip()
             session = db_session.create_session()
             if session.query(Books).filter(Books.title == title).first():
                 await channel.send("Такая книга уже есть в БД")
+                return
+            if not session.query(Genre).filter(Genre.genre == genre).first():
+                await channel.send('Такого жанра нет в БД')
                 return
             book = Books(
                 author_id=session.query(Author).filter(Author.surname == surname).first().id,
                 title=title,
                 date=date,
-                price=price
+                price=price,
+                genre_id=session.query(Genre).filter(Genre.genre == genre).first().id
             )
             response = requests.get(url)
             len_books = len(session.query(Books).all())
