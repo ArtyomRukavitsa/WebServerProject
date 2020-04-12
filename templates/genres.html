@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+ <h1>Library</h1>
+ {% for genre in genres%}
+ <h2>Genre №{{genres.index(genre) + 1}}</h2>
+    <div class="card border-success mb-3" style="max-width: 18rem;">
+              <div class="bg-info text-white card-header" ><h5>{{genre.genre}}</h5></div>
+              <div class="card-body">
+                <a href="{{ extra_info[loop.index0] }}" class="btn btn-primary">Подробнее</a>
+              </div>
+    </div>
+{% if current_user.is_authenticated and current_user.id == 1 %}
+    <div>
+        <a href="/genres/{{ genre.id }}" class="btn btn-warning">Изменить</a>
+        <a href="/genres_delete/{{ genre.id }}" class="btn btn-danger">Удалить</a>
+    </div>
+     {% endif %}
+{% endfor %}
+
+{%endblock%}

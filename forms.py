@@ -23,6 +23,7 @@ class LoginForm(FlaskForm):
 class BooksForm(FlaskForm):
     author = StringField('Фамилия автора', validators=[DataRequired()])
     title = StringField('Название книги', validators=[DataRequired()])
+    genre = StringField('Название жанра')
     date = IntegerField('Дата создания книги', validators=[DataRequired()])
     price = IntegerField('Цена книги', validators=[DataRequired()])
     cover = StringField('Обложка книги')
@@ -39,3 +40,7 @@ class AuthorForm(FlaskForm):
 
 class InputForm(FlaskForm):
     message = StringField('')
+
+
+class GenreForm(FlaskForm):
+    genre = StringField('Название жанра', validators=[DataRequired()])

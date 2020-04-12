@@ -13,7 +13,10 @@ class Books(SqlAlchemyBase, SerializerMixin):
     author_id = sqlalchemy.Column(sqlalchemy.Integer,
                                     sqlalchemy.ForeignKey("author.id"))  # связывем книгу с автором
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)  # название книги
+    genre_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("genre.id"))  # связываем книгу с жанром
     date = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)    # дата издания
     price = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)  # цена книги
     cover = sqlalchemy.Column(sqlalchemy.String, nullable=False)  # обложка книги
+
     author = orm.relation("Author")
+    genre = orm.relation("Genre")

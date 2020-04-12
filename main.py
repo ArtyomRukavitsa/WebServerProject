@@ -2,11 +2,12 @@ from flask import Flask, render_template, redirect, abort, request, make_respons
 from data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_restful import reqparse, abort, Api, Resource
-from forms import RegisterForm, LoginForm, BooksForm, AuthorForm, InputForm
+from forms import RegisterForm, LoginForm, BooksForm, AuthorForm, InputForm, GenreForm
 import wikipedia
 from data.users import User
 from data.books import Books
 from data.author import Author
+from data.genres import Genre
 from data.users_recource import UsersListResource, UsersResource
 from data.books_resource import BooksResource, BooksListResource
 from data.author_resource import AuthorsResource, AuthorsListResource
@@ -181,50 +182,89 @@ def author_delete(id):
     return redirect('/')
 
 
-@app.route('/authors/<int:id>', methods=['GET', 'POST'])
+@app.route('/genres')
+def genres():
+    session = db_session.create_session()
+    genres = session.query(Genre).all()
+    extra_info = []
+    for genre in genres:
+        url = f'https://ru.wikipedia.org/wiki/{genre.genre}'
+        extra_info.append(url)
+    return render_template('genres.html', genres=genres, extra_info=extra_info)
+
+
+# Добавление писателя (только админ)
+@app.route('/addgenres', methods=['GET', 'POST'])
+@login_required
+def addgenre():
+    form = GenreForm()
+    session = db_session.create_session()
+    if form.validate_on_submit():
+        if session:
+            genre = Genre(
+            genre=form.genre.data
+            )
+            session.add(genre)
+            session.commit()
+            return redirect("/")
+        return redirect('/logout')
+    return render_template('addgenre.html', title='Добавление жанра', form=form)
+
+
+@app.route('/genres_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def genre_delete(id):
+    session = db_session.create_session()
+    genre = session.query(Genre).filter(Genre.id == id,
+                                   current_user.id == 1).first()
+    if genre:
+        session.delete(genre)
+        session.commit()
+    else:
+        abort(404)
+    return redirect('/')
+
+
+@app.route('/genres/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_authors(id):
-    form = AuthorForm()
+    form = GenreForm()
     if request.method == "GET":
         session = db_session.create_session()
-        author = session.query(Author).filter(Author.id == id,
+        genre = session.query(Genre).filter(Genre.id == id,
                                           current_user.id == 1).first()
-        if author:
-            form.name.data = author.name
-            form.surname.data = author.surname
-            form.years.data = author.years
-            form.list_of_books.data = author.list_of_books
+        if genre:
+            form.genre.data = genre.genre
         else:
             abort(404)
     if form.validate_on_submit():
         session = db_session.create_session()
-        author = session.query(Author).filter(Author.id == id,
-                                              current_user.id == 1).first()
-        if author:
-            author.name = form.name.data
-            author.surname = form.surname.data
-            author.years = form.years.data
-            author.list_of_books = form.list_of_books.data
+        genre = session.query(Genre).filter(Genre.id == id,
+                                            current_user.id == 1).first()
+        if genre:
+            genre.genre = form.genre.data
             session.commit()
-            return redirect('/authors')
+            return redirect('/genres')
         else:
             abort(404)
-    return render_template('addauthor.html', title='Редактирование авторов', form=form)
+    return render_template('addgenre.html', title='Редактирование жанров', form=form)
 
 # Отображение всех книг
 @app.route('/books')
 def books():
     session = db_session.create_session()
     books = session.query(Books).all()
-    names, surnames, extra_info = [], [], []
+    names, surnames, genres, extra_info = [], [], [], []
     for book in session.query(Books).all():
         author = session.query(Author).filter(Author.id == book.author_id).first()
+        genres = session.query(Genre).filter(Genre.id == book.genre_id).first()
         names.append(author.name)
         surnames.append(author.surname)
         b = "_".join(book.title.strip().split())
         url = f'https://ru.wikipedia.org/wiki/{b}'
         extra_info.append(url)
-    return render_template('books.html', books=books, names=names, surnames=surnames, extra_info=extra_info)
+    return render_template('books.html', books=books, names=names, surnames=surnames,
+                           extra_info=extra_info, genres=genres)
 
 
 # Обрабочик кнопки "Купить книгу"
@@ -302,10 +342,12 @@ def addbooks():
     form = BooksForm()
     session = db_session.create_session()
     author = session.query(Author)
+    genre = session.query(Genre)
     if form.validate_on_submit():
         if session:
             book = Books(
             author_id=author.filter(Author.surname == form.author.data).first().id,
+            genre_id=genre.filter(Genre.genre == form.genre.data).first().id,
             title=form.title.data,
             date=form.date.data,
             price=form.price.data
@@ -336,8 +378,10 @@ def edit_book(id):
                                           current_user.id == 1).first()
         if book:
             author = session.query(Author).filter(Author.id == book.author_id).first()
+            genre = session.query(Genre).filter(Genre.id == book.genre_id).first()
             form.author.data = author.surname
             form.title.data = book.title
+            form.genre.data = genre.genre
             form.date.data = book.date
             form.cover.data = book.cover
             form.price.data = book.price
@@ -349,7 +393,9 @@ def edit_book(id):
                                            current_user.id == 1).first()
         if book:
             author = session.query(Author).filter(Author.surname == form.author.data).first()
+            genre = session.query(Genre).filter(Genre.genre == form.genre.data).first()
             book.author_id = author.id
+            book.genre_id = genre.id
             book.title = form.title.data
             book.date = form.date.data
             book.price = form.price.data

@@ -24,6 +24,15 @@
             </p>
         {% endfor %}
     </p>
+        <p>
+        {{ form.genre.label }}<br>
+        {{ form.genre(class="form-control") }}<br>
+        {% for error in form.genre.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
     <p>
         {{ form.price.label }}<br>
         {{ form.price(class="form-control") }}<br>
