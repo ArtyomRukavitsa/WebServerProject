@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post">
+{{ form.hidden_tag() }}
+{{ form.csrf_token }}
+
+{{ form.surname.label }}<br>
+{{ form.surname(class="form-control") }}<br>
+{% for error in form.surname.errors %}
+    <p class="alert alert-danger" role="alert">
+        {{ error }}
+    </p>
+{% endfor %}
+    <h3>{{ message }}</h3>
+</form>
+{%endblock%}

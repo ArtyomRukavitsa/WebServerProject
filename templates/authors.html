@@ -2,6 +2,8 @@
 
 
 {% block content %}
+{% if err %} <h3>{{ err }}</h3>
+{% else %}
  <h1>Library</h1>
  {% for author in authors%}
  <h2>Author №{{authors.index(author) + 1}}</h2>
@@ -24,5 +26,5 @@
     </div>
      {% endif %}
 {% endfor %}
-
+{% endif %}
 {%endblock%}

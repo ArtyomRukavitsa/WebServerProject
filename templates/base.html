@@ -21,7 +21,7 @@
         </p>
 {% endif %}
       </nav>
-        {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated and current_user.id == 1%}
          <a class="btn btn-primary" href="/addbooks">Добавить книгу</a>
         <a class="btn btn-primary" href="/addauthor">Добавить автора</a>
          <a class="btn btn-primary" href="/addgenres">Добавить жанр</a>
@@ -29,6 +29,9 @@
         <a class="btn btn-primary" href="/books">Просмотр книг</a>
         <a class="btn btn-primary" href="/authors">Просмотр авторов</a>
         <a class="btn btn-primary" href="/genres">Просмотр жанров</a>
+        <a class="btn btn-primary" href="/searchauthor">Фильтр по автору</a>
+        <a class="btn btn-primary" href="/searchprice">Фильтр по цене</a>
+         <a class="btn btn-primary" href="/searchgenre">Фильтр по жанру</a>
     </header>
     <!-- Begin page content -->
     <main role="main" class="container">

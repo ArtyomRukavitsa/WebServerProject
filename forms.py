@@ -44,3 +44,17 @@ class InputForm(FlaskForm):
 
 class GenreForm(FlaskForm):
     genre = StringField('Название жанра', validators=[DataRequired()])
+
+
+class AuthorSearch(FlaskForm):
+    surname = StringField('Фамилия писателя', validators=[DataRequired()])
+
+
+class GenreSearch(FlaskForm):
+    genre = StringField('Жанр книг', validators=[DataRequired()])
+
+
+class PriceSearch(FlaskForm):
+    minimum = IntegerField('Минимальная цена книги', validators=[DataRequired()])
+    maximum = IntegerField('Максимальная цена книги', validators=[DataRequired()])
+    submit = SubmitField('Поиск')

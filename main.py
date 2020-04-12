@@ -2,7 +2,8 @@ from flask import Flask, render_template, redirect, abort, request, make_respons
 from data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_restful import reqparse, abort, Api, Resource
-from forms import RegisterForm, LoginForm, BooksForm, AuthorForm, InputForm, GenreForm
+from forms import RegisterForm, LoginForm, BooksForm, AuthorForm, \
+    InputForm, GenreForm, AuthorSearch, GenreSearch, PriceSearch
 import wikipedia
 from data.users import User
 from data.books import Books
@@ -53,18 +54,102 @@ def sent(message, answer):
     elif a == 1:
         session = db_session.create_session()
         book = session.query(Books).filter(Books.title == message).first()
-        author = session.query(Author).filter(Author.id == book.author_id).first()
-        genre = session.query(Genre).filter(Genre.id == book.genre_id).first().genre
-        b = "_".join(book.title.strip().split())
-        url = f'https://ru.wikipedia.org/wiki/{b}'
-        return render_template('books.html', books=[book], names=[author.name],
-                               surnames=[author.surname], extra_info=[url], genres=[genre])
+        if book:
+            author = session.query(Author).filter(Author.id == book.author_id).first()
+            genre = session.query(Genre).filter(Genre.id == book.genre_id).first().genre
+            b = "_".join(book.title.strip().split())
+            url = f'https://ru.wikipedia.org/wiki/{b}'
+            return render_template('books.html', books=[book], names=[author.name],
+                                   surnames=[author.surname], extra_info=[url], genres=[genre], err='')
+        return render_template('books.html', err='Данной книги у нас нет в наличии')
     elif a == 2:
         session = db_session.create_session()
         name, surname = message.split()
         author = session.query(Author).filter(Author.name == name, Author.surname == surname).first()
-        url = f'https://ru.wikipedia.org/wiki/{author.name} {author.surname}'
-        return render_template('authors.html', authors=[author], extra_info=[url])
+        if author:
+            url = f'https://ru.wikipedia.org/wiki/{author.name} {author.surname}'
+            return render_template('authors.html', authors=[author], extra_info=[url], err='')
+        return render_template('authors.html', err='Книг данного писателя у нас нет в наличии')
+
+
+@app.route('/searchauthor', methods=['GET', 'POST'])
+@login_required
+def search_by_author():
+    form = AuthorSearch()
+    if form.validate_on_submit():
+        surname = form.surname.data
+        session = db_session.create_session()
+        author = session.query(Author).filter(Author.surname == surname).first()
+        if not author:
+            return render_template('searchauthor.html', title='Фильтрация по автору', form=form, message='Книг такого автора у нас нет')
+        books = session.query(Books).filter(Books.author_id == author.id).all()
+        genres, url = [], []
+        for book in books:
+            genres.append(session.query(Genre).filter(Genre.id == book.genre_id).first().genre)
+            b = "_".join(book.title.strip().split())
+            url_ = f'https://ru.wikipedia.org/wiki/{b}'
+            url.append(url_)
+        return render_template('books.html', title='Фильтрация по автору', books=books,
+                               surnames=[author.surname] * len(books), names=[author.name] * len(books),
+                               genres=genres, extra_info=url, message='')
+    return render_template("searchauthor.html", title='Фильтрация по автору', form=form, message='')
+
+
+@app.route('/searchgenre', methods=['GET', 'POST'])
+@login_required
+def search_by_genre():
+    form = GenreSearch()
+    if form.validate_on_submit():
+        genre = form.genre.data.lower()
+        session = db_session.create_session()
+        genre = session.query(Genre).filter(Genre.genre == genre).first()
+        if not genre:
+            return render_template('searchgenre.html', title='Фильтрация по жанру', form=form,
+                                   message='Книг такого жанра у нас нет')
+        books = session.query(Books).filter(Books.genre_id == genre.id).all()
+        names, surnames, url = [], [], []
+        for book in books:
+            author = session.query(Author).filter(Author.id == book.author_id).first()
+            names.append(author.name)
+            surnames.append(author.surname)
+            b = "_".join(book.title.strip().split())
+            url_ = f'https://ru.wikipedia.org/wiki/{b}'
+            url.append(url_)
+        return render_template('books.html', title='Фильтрация по жанру', books=books,
+                               surnames=surnames, names=names,
+                               genres=[genre.genre] * len(books), extra_info=url, message='')
+    return render_template("searchgenre.html", title='Фильтрация по жанру', form=form, message='')
+
+
+
+@app.route('/searchprice', methods=['GET', 'POST'])
+@login_required
+def search_by_price():
+    form = PriceSearch()
+    if form.validate_on_submit():
+        minimum = form.minimum.data
+        maximum = form.maximum.data
+        if minimum > maximum:
+            return render_template('searchprice.html', title='Фильтрация по цене', form=form,
+                                   message='Поле с минимальным значением хранит большее значение')
+        session = db_session.create_session()
+        books = session.query(Books).filter(Books.price >= minimum, Books.price <= maximum).all()
+        if not books:
+            return render_template('searchprice.html', title='Фильтрация по цене', form=form,
+                                   message='Книг в такой ценовой категории у нас нет')
+        names, surnames, url, genres = [], [], [], []
+        for book in books:
+            author = session.query(Author).filter(Author.id == book.author_id).first()
+            genres.append(session.query(Genre).filter(Genre.id == book.genre_id).first().genre)
+            names.append(author.name)
+            surnames.append(author.surname)
+            b = "_".join(book.title.strip().split())
+            url_ = f'https://ru.wikipedia.org/wiki/{b}'
+            url.append(url_)
+        return render_template('books.html', title='Фильтрация по жанру', books=books,
+                               surnames=surnames, names=names,
+                               genres=genres, extra_info=url, message='')
+    return render_template("searchprice.html", title='Фильтрация по жанру', form=form, message='')
 
 
 @app.errorhandler(404)
@@ -321,7 +406,6 @@ def buy():
     return redirect('/books')
 
 
-
 @app.route('/books_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
 def books_delete(id):
@@ -359,11 +443,11 @@ def addbooks():
             session.add(book)
             session.commit()
             book = session.query(Books).filter(Books.title == form.title.data).first()
-            photo = f"book{book.id}.jpg"
+            photo = f"static/img/book{book.id}.jpg"
             f = request.files['file']
             with open(photo, "wb") as file:
                 file.write(f.read())
-            book.cover = photo
+            book.cover = f'book{book.id}.jpg'
             session.commit()
             return redirect("/")
         return redirect('/logout')
