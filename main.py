@@ -3,12 +3,14 @@ from data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_restful import reqparse, abort, Api, Resource
 from forms import RegisterForm, LoginForm, BooksForm, AuthorForm, \
-    InputForm, GenreForm, AuthorSearch, GenreSearch, PriceSearch
+    InputForm, GenreForm, AuthorSearch, GenreSearch, PriceSearch, CreditCard
 import wikipedia
 from data.users import User
 from data.books import Books
 from data.author import Author
 from data.genres import Genre
+import datetime
+from data.card_algs import luhn_algorithm
 from data.users_recource import UsersListResource, UsersResource
 from data.books_resource import BooksResource, BooksListResource
 from data.author_resource import AuthorsResource, AuthorsListResource
@@ -119,7 +121,6 @@ def search_by_genre():
                                surnames=surnames, names=names,
                                genres=[genre.genre] * len(books), extra_info=url, message='')
     return render_template("searchgenre.html", title='Фильтрация по жанру', form=form, message='')
-
 
 
 @app.route('/searchprice', methods=['GET', 'POST'])
@@ -374,11 +375,11 @@ def books_buy(book_id):
 def basket():
     session = db_session.create_session()
     user = session.query(User).get(current_user.id)
-    books_id = user.bought.strip(', ')
+    books_id = user.bought
     names, surnames, books = [], [], []
     cost = 0
     if books_id:
-        for id in books_id.split(','):
+        for id in books_id.strip(', ').split(','):
             book = session.query(Books).filter(Books.id == id).first()
             author = session.query(Author).filter(Author.id == book.author_id).first()
             names.append(author.name)
@@ -386,6 +387,74 @@ def basket():
             books.append(book)
             cost += book.price
     return render_template('basket.html', title='Корзина', books=books, names=names, surnames=surnames, cost=cost)
+
+
+# Обрабочик псевдо-оплаты
+@app.route('/credit_card', methods=['GET', 'POST'])
+@login_required
+def credit_card():
+    form = CreditCard()
+    session = db_session.create_session()
+    if form.validate_on_submit():
+        user = session.query(User).filter(User.surname == form.surname.data).first()
+        if not user:
+            return render_template('credit_card.html',
+                                   title='Оплата покупок',
+                                   message='Пользователя с данной фамилией не найдено',
+                                   form=form)
+        if user.name != form.name.data:
+            return render_template('credit_card.html',
+                                   title='Оплата покупок',
+                                   message='Введенное имя не совпадает с именем, введенным при регистрации',
+                                   form=form)
+        card_number = "".join(form.card_number.data.strip().split())
+        if not card_number.isdigit():
+            return render_template('credit_card.html',
+                                   title='Оплата покупок',
+                                   message='В номере банковской карты присутствуют буквы или другие знаки!',
+                                   form=form)
+        if len(card_number) != 16:
+            return render_template('credit_card.html',
+                                   title='Оплата покупок',
+                                   message='Длина банковской карты не составляет 16 цифр!',
+                                   form=form)
+        if not luhn_algorithm(card_number):
+            return render_template('credit_card.html',
+                                   title='Оплата покупок',
+                                   message='Данного номера банковской карты не существует! Проверьте данные',
+                                   form=form)
+        try:
+            month, year = form.month_year.data.split('/')
+        except ValueError:
+            return render_template('credit_card.html',
+                                   title='Оплата покупок',
+                                   message='Нарушение формата даты истечения срока карты!',
+                                   form=form)
+        if not month.isdigit() or not year.isdigit():
+            return render_template('credit_card.html',
+                                   title='Оплата покупок',
+                                   message='Либо дата, либо год истечения срока '
+                                           'карты содержит буквы или спец. символы',
+                                   form=form)
+        if int(month) > 12 or int(month) < 1:
+            return render_template('credit_card.html',
+                                   title='Оплата покупок',
+                                   message='Число месяца может быть от 1 до 12!',
+                                   form=form)
+        if len(str(year)) != 2:
+            return render_template('credit_card.html',
+                                   title='Оплата покупок',
+                                   message='Число года — двузначное число! Проверьте данные!',
+                                   form=form)
+        now = datetime.datetime.now()
+        card_expiration = datetime.datetime(day=1, month=int(month), year=2000 + int(year))
+        if now > card_expiration:
+            return render_template('credit_card.html',
+                                   title='Оплата покупок',
+                                   message='Срок действия вашей банковской карты просрочен!',
+                                   form=form)
+        return redirect('/buy')
+    return render_template('credit_card.html', title='Оплата покупок', message='', form=form)
 
 
 # Обрабочик кнопки "Купить книгу"

@@ -58,3 +58,11 @@ class PriceSearch(FlaskForm):
     minimum = IntegerField('Минимальная цена книги', validators=[DataRequired()])
     maximum = IntegerField('Максимальная цена книги', validators=[DataRequired()])
     submit = SubmitField('Поиск')
+
+
+class CreditCard(FlaskForm):
+    name = StringField('Ваше имя', validators=[DataRequired()])
+    surname = StringField('Ваша фамилия', validators=[DataRequired()])
+    card_number = StringField('Ваша банковская карта', validators=[DataRequired()])
+    month_year = StringField('Месяц и год истечения карты (формат: ММ/ГГ)')
+    submit = SubmitField('Оплатить')

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Добавление жанра</h1>
+<form class="login_form" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+    <p>
+        {{ form.name.label }}<br>
+        {{ form.name(class="form-control") }}<br>
+        {% for error in form.name.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+        <p>
+        {{ form.surname.label }}<br>
+        {{ form.surname(class="form-control") }}<br>
+        {% for error in form.surname.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+        <p>
+        {{ form.card_number.label }}<br>
+        {{ form.card_number(class="form-control") }}<br>
+        {% for error in form.card_number.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+        <p>
+        {{ form.month_year.label }}<br>
+        {{ form.month_year(class="form-control") }}<br>
+        {% for error in form.card_number.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+         <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+        <h3>{{ message }}</h3>
+    </div>
+</form>
+{% endblock %}
