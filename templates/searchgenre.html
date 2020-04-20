@@ -2,16 +2,19 @@
 
 {% block content %}
 <form action="" method="post">
-{{ form.hidden_tag() }}
-{{ form.csrf_token }}
-
-{{ form.genre.label }}<br>
-{{ form.genre(class="form-control") }}<br>
-{% for error in form.genre.errors %}
-    <p class="alert alert-danger" role="alert">
-        {{ error }}
-    </p>
-{% endfor %}
-    <h3>{{ message }}</h3>
+    <div class="form-group">
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+    <p>
+    {{ form.genre.label }}<br>
+    {{ form.genre(class="form-control") }}<br>
+    {% for error in form.genre.errors %}
+        <p class="alert alert-danger" role="alert">
+            {{ error }}
+        </p>
+    {% endfor %}
+        <h3>{{ message }}</h3>
+        </p>
+    </div>
 </form>
 {%endblock%}

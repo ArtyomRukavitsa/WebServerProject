@@ -13,7 +13,7 @@ from data.users_recource import UsersListResource, UsersResource
 from data.books_resource import BooksResource, BooksListResource
 from data.author_resource import AuthorsResource, AuthorsListResource
 import os
-
+from data.auth_data import artem, natasha, project
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'WEB_SERVER_project'
@@ -335,6 +335,7 @@ def edit_authors(id):
             abort(404)
     return render_template('addgenre.html', title='Редактирование жанров', form=form)
 
+
 # Отображение всех книг
 @app.route('/books')
 def books():
@@ -493,15 +494,20 @@ def edit_book(id):
     return render_template('addbooks.html', title='Редактирование книги', form=form)
 
 
+@app.route('/contacts')
+def contacts():
+    return render_template('contacts.html', title='Контакты', artem=artem, natasha=natasha, project=project)
+
+
 # Запуск программы
 def main():
     db_session.global_init("db/book_shop.sqlite")
-    api.add_resource(UsersListResource, '/api/v1/users')
-    api.add_resource(UsersResource, '/api/v1/users/<int:user_id>')
-    api.add_resource(BooksListResource, '/api/v1/books')
-    api.add_resource(BooksResource, '/api/v1/books/<int:books_id>')
-    api.add_resource(AuthorsListResource, '/api/v1/author')
-    api.add_resource(AuthorsResource, '/api/v1/books/<int:author_id>')
+    # api.add_resource(UsersListResource, '/api/v1/users')
+    # api.add_resource(UsersResource, '/api/v1/users/<int:user_id>')
+    # api.add_resource(BooksListResource, '/api/v1/books')
+    # api.add_resource(BooksResource, '/api/v1/books/<int:books_id>')
+    # api.add_resource(AuthorsListResource, '/api/v1/author')
+    # api.add_resource(AuthorsResource, '/api/v1/books/<int:author_id>')
     app.run()
 
 

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Разработчики:</h1>
+<div class="card border-success mb-3" style="max-width: 18rem;">
+              <div class="bg-info text-white card-header" ><h5>Артем</h5></div>
+              <div class="card-body">
+                <a href="{{ artem }}" class="btn btn-primary">github</a>
+                  <a href="{{ project }}" class="btn btn-primary">Current project</a>
+              </div>
+    </div>
+<h1></h1>
+<h1></h1>
+<div class="card border-success mb-3" style="max-width: 18rem;">
+              <div class="bg-info text-white card-header" ><h5>Наташа</h5></div>
+              <div class="card-body">
+                <a href="{{ natasha }}" class="btn btn-primary">github</a>
+                  <a href="{{ project }}" class="btn btn-primary">Current project</a>
+              </div>
+    </div>
+{%endblock%}
