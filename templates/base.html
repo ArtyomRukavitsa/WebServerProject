@@ -5,38 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="/static/css/style.css" />
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <title>{{title}}</title>
 </head>
   <body>
     <header>
-      <nav class="navbar navbar-light bg-light">
-          <a href="/"><h1><mark>Книжный магазин </mark></h1></a>
-        <a class="navbar-brand" href="/basket">Корзина</a>
-    {% if current_user.is_authenticated %}
-          <a class="navbar-brand" href="/logout">{{ current_user.nickname }}</a>
-    {% else %}
-        <p>
-        <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
-        <a class="btn btn-success" href="/login">Войти</a>
-        </p>
-{% endif %}
-      </nav>
-        {% if current_user.is_authenticated and current_user.id == 1%}
-         <a class="btn btn-primary" href="/addbooks">Добавить книгу</a>
-        <a class="btn btn-primary" href="/addauthor">Добавить автора</a>
-         <a class="btn btn-primary" href="/addgenres">Добавить жанр</a>
-     {% endif %}
-        <a class="btn btn-primary" href="/books">Просмотр книг</a>
-        <a class="btn btn-primary" href="/authors">Просмотр авторов</a>
-        <a class="btn btn-primary" href="/genres">Просмотр жанров</a>
-        <a class="btn btn-primary" href="/searchauthor">Фильтр по автору</a>
-        <a class="btn btn-primary" href="/searchprice">Фильтр по цене</a>
-         <a class="btn btn-primary" href="/searchgenre">Фильтр по жанру</a>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/"><h1>Книжный магазин</h1></a>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="/basket">Корзина<span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/">Главная</a>
+      </li>
+      <li class="nav-item dropdown active">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
+           role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Содержание
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            {% if current_user.is_authenticated and current_user.id == 1%}
+            <a class="dropdown-item" href="/addbooks">Добавить книгу</a>
+            <a class="dropdown-item" href="/addauthor">Добавить автора</a>
+            <a class="dropdown-item" href="/addgenres">Добавить жанр</a>
+            {% endif %}
+            <a class="dropdown-item" href="/books">Просмотр книг</a>
+            <a class="dropdown-item" href="/authors">Просмотр авторов</a>
+            <a class="dropdown-item" href="/genres">Просмотр жанров</a>
+
+        </div>
+      </li>
+        <li class="nav-item dropdown active">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2" role="button" data-toggle="dropdown"
+           aria-haspopup="true" aria-expanded="false">
+          Фильтр
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown2">
+            <a class="dropdown-item" href="/searchauthor">Фильтр по автору</a>
+            <a class="dropdown-item" href="/searchprice">Фильтр по цене</a>
+            <a class="dropdown-item" href="/searchgenre">Фильтр по жанру</a>
+        </div>
+        </li>
+        {% if current_user.is_authenticated %}
+        <li class="nav-item active">
+        <a class="nav-link" href="/logout">{{ current_user.nickname }}</a>
+        </li>
+        {% else %}
+        <li class="nav-item active">
+        <a class="nav-link" href="/register">Зарегистрироваться</a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="/login">Войти</a>
+        </li>
+        {% endif %}
+        <li class="nav-item active">
+        <a class="nav-link" href="/contacts">Контакты</a>
+        </li>
+    </ul>
+
+  </div>
+</nav>
     </header>
     <!-- Begin page content -->
     <main role="main" class="container">
         {% block content %}{% endblock %}
-        <a class="btn btn-warning" href="/contacts">Контакты</a>
     </main>
   </body>
 </html>
