@@ -11,9 +11,6 @@ from data.author import Author
 from data.genres import Genre
 import datetime
 from data.card_algs import luhn_algorithm
-from data.users_recource import UsersListResource, UsersResource
-from data.books_resource import BooksResource, BooksListResource
-from data.author_resource import AuthorsResource, AuthorsListResource
 import os
 from data.auth_data import artem, natasha, project
 
