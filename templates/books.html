@@ -26,6 +26,8 @@
                     {% endif %}
                 {% if current_user.is_authenticated and current_user.id != 1 %}
                   <a href="/books_buy/{{ book.id }}" class="btn btn-success">Купить</a>
+                  <a href="/books_review/{{ book.id }}" class="btn btn-info">Отзыв</a>
+                  <a href="/books_review_show/{{ book.id }}" class="btn btn-light">Все отзывы</a>
                   {% endif %}
               </div>
         </div>

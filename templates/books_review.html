@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Отзыв о книге "{{ book.title }}"</h1>
+<form class="login_form" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+    <p>
+        {{ form.review.label }}<br>
+        {{ form.review(class="form-control") }}<br>
+        {% for error in form.review.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+        <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    </div>
+
+</form>
+{% endblock %}

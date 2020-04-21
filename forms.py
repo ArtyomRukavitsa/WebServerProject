@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField
-from wtforms.validators import DataRequired
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField, TextAreaField
+from wtforms.validators import DataRequired, length
 
 
 class RegisterForm(FlaskForm):
@@ -66,3 +66,8 @@ class CreditCard(FlaskForm):
     card_number = StringField('Ваша банковская карта', validators=[DataRequired()])
     month_year = StringField('Месяц и год истечения карты (формат: ММ/ГГ)')
     submit = SubmitField('Оплатить')
+
+
+class BookReview(FlaskForm):
+    review = TextAreaField('Напишите отзыв к книге!', validators=[DataRequired(), length(max=200)])
+    submit = SubmitField('Опубликовать')

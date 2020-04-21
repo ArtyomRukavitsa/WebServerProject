@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+{% if err %}
+<h3>{{ err }}</h3>
+ <a href="/books" class="btn btn-primary">К книгам</a>
+{% else %}
+ <h1>Отзывы о книге "{{ book.title }}"</h1>
+ {% for r in reviews%}
+<div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
+  <div class="card-header">Отзыв №{{ loop.index }}</div>
+  <div class="card-body">
+    <p class="card-text">{{ r }}</p>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+{%endblock%}

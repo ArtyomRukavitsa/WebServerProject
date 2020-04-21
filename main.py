@@ -3,7 +3,7 @@ from data import db_session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_restful import reqparse, abort, Api, Resource
 from forms import RegisterForm, LoginForm, BooksForm, AuthorForm, \
-    InputForm, GenreForm, AuthorSearch, GenreSearch, PriceSearch, CreditCard
+    InputForm, GenreForm, AuthorSearch, GenreSearch, PriceSearch, CreditCard, BookReview
 import wikipediaapi
 import requests
 from data.users import User
@@ -45,7 +45,6 @@ def index():
 def sent(message, answer):
     answers = ['Вывод пользователей (введите users)', 'Книга(введите название)', 'Автор(введите имя и фамилию)']
     a = answers.index(answer)
-    print(message, answer)
     form = InputForm()
     if a == 0:
         if current_user.id == 1:
@@ -60,17 +59,17 @@ def sent(message, answer):
             genre = session.query(Genre).filter(Genre.id == book.genre_id).first().genre
             b = "_".join(book.title.strip().split())
             url = f'https://ru.wikipedia.org/wiki/{b}'
-            return render_template('books.html', books=[book], names=[author.name],
+            return render_template('books.html', title='Книга', books=[book], names=[author.name],
                                    surnames=[author.surname], extra_info=[url], genres=[genre], err='')
-        return render_template('books.html', err='Данной книги у нас нет в наличии')
+        return render_template('books.html', title='Книга', err='Данной книги у нас нет в наличии')
     elif a == 2:
         session = db_session.create_session()
         name, surname = message.split()
         author = session.query(Author).filter(Author.name == name, Author.surname == surname).first()
         if author:
             url = f'https://ru.wikipedia.org/wiki/{author.name} {author.surname}'
-            return render_template('authors.html', authors=[author], extra_info=[url], err='')
-        return render_template('authors.html', err='Книг данного писателя у нас нет в наличии')
+            return render_template('authors.html', title='Автор', authors=[author], extra_info=[url], err='')
+        return render_template('authors.html', title='Автор', err='Книг данного писателя у нас нет в наличии')
 
 
 @app.route('/searchauthor', methods=['GET', 'POST'])
@@ -162,7 +161,7 @@ def not_found(error):
 def users():
     session = db_session.create_session()
     users = session.query(User).all()
-    return render_template('users.html', users=users)
+    return render_template('users.html', title='Все пользователи', users=users)
 
 
 # Страница регистрации
@@ -204,6 +203,7 @@ def login():
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
         return render_template('login.html',
+                               title='Авторизация',
                                message="Неправильный логин или пароль",
                                form=form)
     return render_template('login.html', title='Авторизация', form=form)
@@ -353,7 +353,7 @@ def books():
         page_py = wiki_wiki.page(f'{b}')
         extra_info.append(page_py.fullurl)
 
-    return render_template('books.html', books=books, names=names, surnames=surnames,
+    return render_template('books.html', title='Все книги', books=books, names=names, surnames=surnames,
                            extra_info=extra_info, genres=genres)
 
 
@@ -368,6 +368,35 @@ def books_buy(book_id):
     user.bought += str(book_id) + ', '
     session.commit()
     return redirect('/books')
+
+
+@app.route('/books_review/<int:book_id>', methods=["GET", "POST"])
+@login_required
+def books_review(book_id):
+    form = BookReview()
+    session = db_session.create_session()
+    book = session.query(Books).get(book_id)
+    if form.validate_on_submit():
+        review = form.review.data
+        if not book.review:
+            book.review = ""
+        book.review += f"{review}+"
+        session.commit()
+        return redirect('/books')
+
+    return render_template('books_review.html', title='Оставить отзыв', book=book, form=form)
+
+
+@app.route('/books_review_show/<int:book_id>', methods=["GET", "POST"])
+@login_required
+def books_review_show(book_id):
+    session = db_session.create_session()
+    book = session.query(Books).get(book_id)
+    if book.review:
+        reviews = book.review.strip('+').split('+')
+        return render_template('books_review_show.html', title='Все отзывы о книге', book=book, reviews=reviews)
+    return render_template('books_review_show.html', title='Все отзывы о книге',
+                           book=book, err='Отзывов к этой книге пока нет!')
 
 
 # Обрабочик Корзины
@@ -399,7 +428,6 @@ def basket_delete(number):
     user = session.query(User).get(current_user.id)
     books_id = user.bought
     books_id = books_id.strip(', ').split(',')
-    print(books_id)
     books_id.remove(str(number))
     user.bought = ', '.join(books_id)
     session.commit()
