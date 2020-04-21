@@ -22,6 +22,7 @@ login_manager.init_app(app)
 api = Api(app)
 wiki_wiki = wikipediaapi.Wikipedia('ru')
 
+
 @login_manager.user_loader
 def load_user(user_id):
     session = db_session.create_session()
@@ -229,7 +230,7 @@ def authors():
     for author in authors:
         page_py = wiki_wiki.page(f'{author.name}_{author.surname}')
         extra_info.append(page_py.fullurl)
-    return render_template('authors.html', authors=authors, extra_info=extra_info)
+    return render_template('authors.html', title='Все авторы', authors=authors, extra_info=extra_info)
 
 
 # Добавление писателя (только админ)
@@ -275,7 +276,7 @@ def genres():
     for genre in genres:
         page_py = wiki_wiki.page(f'{genre.genre}')
         extra_info.append(page_py.fullurl)
-    return render_template('genres.html', genres=genres, extra_info=extra_info)
+    return render_template('genres.html', title='Все жанры', genres=genres, extra_info=extra_info)
 
 
 # Добавление писателя (только админ)
@@ -386,8 +387,23 @@ def basket():
             surnames.append(author.surname)
             books.append(book)
             cost += book.price
-    return render_template('basket.html', title='Корзина', books=books, names=names, surnames=surnames, cost=cost)
+        return render_template('basket.html', title='Корзина', books=books, names=names, surnames=surnames, cost=cost)
+    return render_template('basket.html', title='Корзина', message='Ваша корзина пуста')
 
+
+# Обрабочик Корзины
+@app.route('/basket_delete/<int:number>')
+@login_required
+def basket_delete(number):
+    session = db_session.create_session()
+    user = session.query(User).get(current_user.id)
+    books_id = user.bought
+    books_id = books_id.strip(', ').split(',')
+    print(books_id)
+    books_id.remove(str(number))
+    user.bought = ', '.join(books_id)
+    session.commit()
+    return redirect('/basket')
 
 # Обрабочик псевдо-оплаты
 @app.route('/credit_card', methods=['GET', 'POST'])
