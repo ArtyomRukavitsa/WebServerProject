@@ -4,7 +4,8 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from flask_restful import reqparse, abort, Api, Resource
 from forms import RegisterForm, LoginForm, BooksForm, AuthorForm, \
     InputForm, GenreForm, AuthorSearch, GenreSearch, PriceSearch, CreditCard
-import wikipedia
+import wikipediaapi
+import requests
 from data.users import User
 from data.books import Books
 from data.author import Author
@@ -19,7 +20,7 @@ app.config['SECRET_KEY'] = 'WEB_SERVER_project'
 login_manager = LoginManager()
 login_manager.init_app(app)
 api = Api(app)
-
+wiki_wiki = wikipediaapi.Wikipedia('ru')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -226,8 +227,8 @@ def authors():
     authors = session.query(Author).all()
     extra_info = []
     for author in authors:
-        url = f'https://ru.wikipedia.org/wiki/{author.name} {author.surname}'
-        extra_info.append(url)
+        page_py = wiki_wiki.page(f'{author.name}_{author.surname}')
+        extra_info.append(page_py.fullurl)
     return render_template('authors.html', authors=authors, extra_info=extra_info)
 
 
@@ -272,8 +273,8 @@ def genres():
     genres = session.query(Genre).all()
     extra_info = []
     for genre in genres:
-        url = f'https://ru.wikipedia.org/wiki/{genre.genre}'
-        extra_info.append(url)
+        page_py = wiki_wiki.page(f'{genre.genre}')
+        extra_info.append(page_py.fullurl)
     return render_template('genres.html', genres=genres, extra_info=extra_info)
 
 
@@ -347,8 +348,10 @@ def books():
         names.append(author.name)
         surnames.append(author.surname)
         b = "_".join(book.title.strip().split())
-        url = f'https://ru.wikipedia.org/wiki/{b}'
-        extra_info.append(url)
+
+        page_py = wiki_wiki.page(f'{b}')
+        extra_info.append(page_py.fullurl)
+
     return render_template('books.html', books=books, names=names, surnames=surnames,
                            extra_info=extra_info, genres=genres)
 
