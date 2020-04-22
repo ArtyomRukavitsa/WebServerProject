@@ -8,4 +8,4 @@ requests
 flask-login
 sqlalchemy-serializer
 flask-wtf
-gunicorn
+gunicornя
