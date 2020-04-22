@@ -18,7 +18,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'WEB_SERVER_project'
 login_manager = LoginManager()
 login_manager.init_app(app)
-api = Api(app)
 wiki_wiki = wikipediaapi.Wikipedia('ru')
 
 
