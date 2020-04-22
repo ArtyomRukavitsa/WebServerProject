@@ -109,6 +109,12 @@ class BookBot(commands.Cog):
         embed.add_field(name='**!!all_authors**',
                         value='Бот вышлет информацию о всех авторах из базы данных!',
                         inline=False)
+        embed.add_field(name='**!!review**',
+                        value='Напиши название книги и узнай отзывы к ней! **Формат: с большой буквы без кавычек!**',
+                        inline=False)
+        embed.add_field(name='**!!all_reviews**',
+                        value='Бот вышлет все отзывы к книгам!',
+                        inline=False)
 
         await channel.send(embed=embed)
 
@@ -339,6 +345,56 @@ class BookBot(commands.Cog):
                             inline=False)
             await channel.send(embed=embed)
 
+    @commands.command(name='review')
+    async def review(self, channel, *book):
+        book = ' '.join(book)
+        session = db_session.create_session()
+        book = session.query(Books).filter(Books.title == book).first()
+
+        if not book:
+            await channel.send('Такой книги у нас нет')
+            return
+        if not book.review:
+            await channel.send('Отзывов к данной книге у нас еще нет...')
+            return
+        reviews = book.review.strip('+').split('+')
+        embed = discord.Embed(
+            title=f"**Отзывы о книге '{book.title}'**",
+            colour=discord.Colour.blue()
+        )
+        count = 0
+        for r in reviews:
+            count += 1
+            embed.add_field(name=f'**Отзыв №{count}**',
+                            value=r,
+                            inline=False)
+        await channel.send(embed=embed)
+
+    @commands.command(name='all_reviews')
+    async def review(self, channel):
+        session = db_session.create_session()
+        books = session.query(Books).all()
+        for book in books:
+            if not book.review:
+                embed = discord.Embed(
+                    title=f"**Отзывы о книге '{book.title}' у нас еще нет...**",
+                    colour=discord.Colour.blue()
+                )
+                await channel.send(embed=embed)
+                return
+            reviews = book.review.strip('+').split('+')
+            embed = discord.Embed(
+                title=f"**Отзывы о книге '{book.title}'**",
+                colour=discord.Colour.blue()
+            )
+            count = 0
+            for r in reviews:
+                count += 1
+                embed.add_field(name=f'**Отзыв №{count}**',
+                                value=r,
+                                inline=False)
+            await channel.send(embed=embed)
+
     @commands.Cog.listener()
     async def on_command_error(self, channel, error):
         if isinstance(error, commands.errors.MissingRole):
@@ -346,5 +402,5 @@ class BookBot(commands.Cog):
 
 
 bot.add_cog(BookBot(bot))
+print('Bot started')
 bot.run(TOKEN)
-

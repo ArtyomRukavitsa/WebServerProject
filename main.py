@@ -29,10 +29,10 @@ def load_user(user_id):
     return session.query(User).get(user_id)
 
 
-# Главная: обдумать, что будет!
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/main', methods=['GET', 'POST'])
 def index():
+    """Страница "Главная" """
     form = InputForm()
     if form.validate_on_submit():
         message = form.message.data
@@ -43,6 +43,7 @@ def index():
 
 @login_required
 def sent(message, answer):
+    """Обработка запросов с "Главной" """
     answers = ['Вывод пользователей (введите users)', 'Книга(введите название)', 'Автор(введите имя и фамилию)']
     a = answers.index(answer)
     form = InputForm()
@@ -75,6 +76,7 @@ def sent(message, answer):
 @app.route('/searchauthor', methods=['GET', 'POST'])
 @login_required
 def search_by_author():
+    """Фильтрация по автору"""
     form = AuthorSearch()
     if form.validate_on_submit():
         surname = form.surname.data
@@ -98,6 +100,7 @@ def search_by_author():
 @app.route('/searchgenre', methods=['GET', 'POST'])
 @login_required
 def search_by_genre():
+    """Фильтрация по жанру"""
     form = GenreSearch()
     if form.validate_on_submit():
         genre = form.genre.data.lower()
@@ -124,6 +127,7 @@ def search_by_genre():
 @app.route('/searchprice', methods=['GET', 'POST'])
 @login_required
 def search_by_price():
+    """Фильтрация по цене"""
     form = PriceSearch()
     if form.validate_on_submit():
         minimum = form.minimum.data
@@ -159,14 +163,15 @@ def not_found(error):
 @app.route('/request/users')
 @login_required
 def users():
+    """Запрос Пользователи"""
     session = db_session.create_session()
     users = session.query(User).all()
     return render_template('users.html', title='Все пользователи', users=users)
 
 
-# Страница регистрации
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
+    """Страница "Регистрация" """
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
@@ -192,9 +197,9 @@ def reqister():
     return render_template('register.html', title='Регистрация', form=form)
 
 
-# Страница авторизации
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Страница "Авторизация" """
     form = LoginForm()
     if form.validate_on_submit():
         session = db_session.create_session()
@@ -209,10 +214,10 @@ def login():
     return render_template('login.html', title='Авторизация', form=form)
 
 
-# Выход
 @app.route('/logout')
 @login_required
 def logout():
+    """ Выход """
     session = db_session.create_session()
     user = session.query(User).get(current_user.id)
     user.bought = ''
@@ -223,6 +228,7 @@ def logout():
 
 @app.route('/maps')
 def maps():
+    """Страница "Место рождений авторов" """
     map_api_server = 'http://static-maps.yandex.ru/1.x/?37.620070,55.753630&size=450,450&spn=3.5,3.5&l=map'
     places = []
     session = db_session.create_session()
@@ -269,9 +275,10 @@ def maps():
                 break
     return render_template('maps.html', title='Карта', authors=authors, api=map_api_server, place=places)
 
-# Отображение всех писателей
+
 @app.route('/authors')
 def authors():
+    """Страница "Все авторы" """
     session = db_session.create_session()
     authors = session.query(Author).all()
     extra_info = []
@@ -282,10 +289,10 @@ def authors():
     return render_template('authors.html', title='Все авторы', authors=authors, extra_info=extra_info)
 
 
-# Добавление писателя (только админ)
 @app.route('/addauthor', methods=['GET', 'POST'])
 @login_required
 def addauthor():
+    """ Добавление писателя (только админ) """
     form = AuthorForm()
     session = db_session.create_session()
     if form.validate_on_submit():
@@ -306,6 +313,7 @@ def addauthor():
 @app.route('/author_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
 def author_delete(id):
+    """ Удаление писателя (только админ)"""
     session = db_session.create_session()
     author = session.query(Author).filter(Author.id == id,
                                    current_user.id == 1).first()
@@ -319,6 +327,7 @@ def author_delete(id):
 
 @app.route('/genres')
 def genres():
+    """Страница "Все жанры" """
     session = db_session.create_session()
     genres = session.query(Genre).all()
     extra_info = []
@@ -328,10 +337,10 @@ def genres():
     return render_template('genres.html', title='Все жанры', genres=genres, extra_info=extra_info)
 
 
-# Добавление писателя (только админ)
 @app.route('/addgenres', methods=['GET', 'POST'])
 @login_required
 def addgenre():
+    """ Добавление жанра (только админ) """
     form = GenreForm()
     session = db_session.create_session()
     if form.validate_on_submit():
@@ -349,6 +358,7 @@ def addgenre():
 @app.route('/genres_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
 def genre_delete(id):
+    """ Удаление жанра (только админ)"""
     session = db_session.create_session()
     genre = session.query(Genre).filter(Genre.id == id,
                                    current_user.id == 1).first()
@@ -363,6 +373,7 @@ def genre_delete(id):
 @app.route('/genres/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_authors(id):
+    """ Страница "Редактирование жанра" """
     form = GenreForm()
     if request.method == "GET":
         session = db_session.create_session()
@@ -385,9 +396,9 @@ def edit_authors(id):
     return render_template('addgenre.html', title='Редактирование жанров', form=form)
 
 
-# Отображение всех книг
 @app.route('/books')
 def books():
+    """ Отображение всех книг"""
     session = db_session.create_session()
     books = session.query(Books).all()
     names, surnames, genres, extra_info = [], [], [], []
@@ -406,10 +417,10 @@ def books():
                            extra_info=extra_info, genres=genres)
 
 
-# Обрабочик кнопки "Купить книгу"
 @app.route('/books_buy/<int:book_id>')
 @login_required
 def books_buy(book_id):
+    """ Обрабочик кнопки "Купить книгу"""
     session = db_session.create_session()
     user = session.query(User).get(current_user.id)
     if not user.bought:  # пользователь за сессию не положил в корзину ни одной книги
@@ -422,6 +433,7 @@ def books_buy(book_id):
 @app.route('/books_review/<int:book_id>', methods=["GET", "POST"])
 @login_required
 def books_review(book_id):
+    """Страница "Оставить отзыв" """
     form = BookReview()
     session = db_session.create_session()
     book = session.query(Books).get(book_id)
@@ -439,6 +451,7 @@ def books_review(book_id):
 @app.route('/books_review_show/<int:book_id>', methods=["GET", "POST"])
 @login_required
 def books_review_show(book_id):
+    """Страница "Отзывы к книге" """
     session = db_session.create_session()
     book = session.query(Books).get(book_id)
     if book.review:
@@ -448,10 +461,10 @@ def books_review_show(book_id):
                            book=book, err='Отзывов к этой книге пока нет!')
 
 
-# Обрабочик Корзины
 @app.route('/basket')
 @login_required
 def basket():
+    """Обрабочик кнопки "Купить книгу" """
     session = db_session.create_session()
     user = session.query(User).get(current_user.id)
     books_id = user.bought
@@ -469,10 +482,10 @@ def basket():
     return render_template('basket.html', title='Корзина', message='Ваша корзина пуста')
 
 
-# Обрабочик Корзины
 @app.route('/basket_delete/<int:number>')
 @login_required
 def basket_delete(number):
+    """Удаление из корзины"""
     session = db_session.create_session()
     user = session.query(User).get(current_user.id)
     books_id = user.bought
@@ -482,10 +495,11 @@ def basket_delete(number):
     session.commit()
     return redirect('/basket')
 
-# Обрабочик псевдо-оплаты
+
 @app.route('/credit_card', methods=['GET', 'POST'])
 @login_required
 def credit_card():
+    """Псевдо-оплата при помощи банковской карты """
     form = CreditCard()
     session = db_session.create_session()
     if form.validate_on_submit():
@@ -550,10 +564,10 @@ def credit_card():
     return render_template('credit_card.html', title='Оплата покупок', message='', form=form)
 
 
-# Обрабочик кнопки "Купить книгу"
 @app.route('/buy')
 @login_required
 def buy():
+    """После оплаты"""
     session = db_session.create_session()
     user = session.query(User).get(current_user.id)
     books_id = user.bought.strip(', ').split(',')
@@ -572,6 +586,7 @@ def buy():
 @app.route('/books_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
 def books_delete(id):
+    """Удаление книги (для админа)"""
     session = db_session.create_session()
     books = session.query(Books).filter(Books.id == id,
                                    current_user.id == 1).first()
@@ -584,10 +599,10 @@ def books_delete(id):
     return redirect('/')
 
 
-# Добавление книги (только админ)
 @app.route('/addbooks', methods=['GET', 'POST'])
 @login_required
 def addbooks():
+    """ Добавление книги (только админ)"""
     form = BooksForm()
     session = db_session.create_session()
     author = session.query(Author)
@@ -620,6 +635,7 @@ def addbooks():
 @app.route('/books/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_book(id):
+    """Редактирование книги (для админа)"""
     form = BooksForm()
     if request.method == "GET":
         session = db_session.create_session()
@@ -658,6 +674,7 @@ def edit_book(id):
 
 @app.route('/contacts')
 def contacts():
+    """Страница "Контакты" """
     return render_template('contacts.html', title='Контакты', artem=artem, natasha=natasha, project=project)
 
 
