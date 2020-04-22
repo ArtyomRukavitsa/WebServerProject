@@ -221,6 +221,54 @@ def logout():
     return redirect("/")
 
 
+@app.route('/maps')
+def maps():
+    map_api_server = 'http://static-maps.yandex.ru/1.x/?37.620070,55.753630&size=450,450&spn=3.5,3.5&l=map'
+    places = []
+    session = db_session.create_session()
+    authors = session.query(Author).all()
+    extra_info = []
+    for author in authors:
+        page_py = wiki_wiki.page(f'{author.name}_{author.surname}')
+        extra_info.append(page_py.fullurl)
+        a = page_py.text.split()
+        a = a[a.index("родился"): a.index("родился") + 10]
+        a = a[a.index("в") + 1:]
+        for i in a:
+            if i[0].islower():
+                continue
+            i = i.replace(',', '')
+            i = i.replace('.', '')
+            i = i.replace('-', '')
+            i = i.replace('—', '')
+
+            geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
+
+            geocoder_params = {
+                "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+                "geocode": i,
+                "format": "json"}
+
+            response = requests.get(geocoder_api_server, params=geocoder_params)
+            if response:
+                # Преобразуем ответ в json-объект
+                json_response = response.json()
+                if len(json_response["response"]["GeoObjectCollection"]["featureMember"]) == 0:
+                    continue
+                # Получаем первый топоним из ответа геокодера.
+                toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+                toponym_coodrinates = toponym["Point"]["pos"].split()
+                toponym_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
+                print(json_response)
+                places.append(toponym_address)
+                # Долгота и Широта :
+                if 'pt' not in map_api_server:
+                    map_api_server += f"&pt={toponym_coodrinates[0]},{toponym_coodrinates[1]},pm2rdm{author.id}"
+                else:
+                    map_api_server += f"~{toponym_coodrinates[0]},{toponym_coodrinates[1]},pm2rdm{author.id}"
+                break
+    return render_template('maps.html', title='Карта', authors=authors, api=map_api_server, place=places)
+
 # Отображение всех писателей
 @app.route('/authors')
 def authors():
@@ -230,6 +278,7 @@ def authors():
     for author in authors:
         page_py = wiki_wiki.page(f'{author.name}_{author.surname}')
         extra_info.append(page_py.fullurl)
+        a = page_py.text.split()
     return render_template('authors.html', title='Все авторы', authors=authors, extra_info=extra_info)
 
 
@@ -615,12 +664,6 @@ def contacts():
 # Запуск программы
 def main():
     db_session.global_init("db/book_shop.sqlite")
-    # api.add_resource(UsersListResource, '/api/v1/users')
-    # api.add_resource(UsersResource, '/api/v1/users/<int:user_id>')
-    # api.add_resource(BooksListResource, '/api/v1/books')
-    # api.add_resource(BooksResource, '/api/v1/books/<int:books_id>')
-    # api.add_resource(AuthorsListResource, '/api/v1/author')
-    # api.add_resource(AuthorsResource, '/api/v1/books/<int:author_id>')
     app.run()
 
 

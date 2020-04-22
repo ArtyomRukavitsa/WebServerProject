@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Места рождения писателей</h1>
+<div class="card border-success mb-3" style="max-width: 50rem;">
+    <div class="row no-gutters">
+    <div class="col-md-8">
+        <img src="{{ api }}" class="card-img-top" alt="Карта">
+    </div>
+        <div class="col-md-4">
+        <div class="card-body">
+            {% for author in authors%}
+            <h6>№Х{{author.id}} ~> {{place[loop.index - 1]}} ~> {{author.name}} {{author.surname}} ~> </h6>
+            {% endfor %}
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

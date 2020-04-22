@@ -8,10 +8,10 @@
 {% else %}
  <h1>Отзывы о книге "{{ book.title }}"</h1>
  {% for r in reviews%}
-<div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
-  <div class="card-header">Отзыв №{{ loop.index }}</div>
+<div class="card border-success mb-3" style="max-width: 18rem;">
+  <div class="bg-info text-white card-header">Отзыв №{{ loop.index }}</div>
   <div class="card-body">
-    <p class="card-text">{{ r }}</p>
+    <h5 class="card-text">{{ r }}</h5>
   </div>
 </div>
 {% endfor %}
