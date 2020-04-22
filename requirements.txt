@@ -7,3 +7,4 @@ wikipedia
 requests
 flask-login
 sqlalchemy-serializer
+flask-wtf
