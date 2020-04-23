@@ -16,3 +16,5 @@
 
 
  * Более подробно на Trello (+ разделение ролей): https://trello.com/b/TUc8kCNA/project-web
+
+[![Run on Repl.it](https://repl.it/badge/github/ArtyomRukavitsa/WebServerProject)](https://repl.it/github/ArtyomRukavitsa/WebServerProject)
