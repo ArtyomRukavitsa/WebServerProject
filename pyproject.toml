@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "WebServerProject"
+version = "0.1.0"
+description = ""
+authors = ["Natasha"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[tool.poetry.dev-dependencies]
+flask = "1.1.1"
+sqlalchemy = "1.3.13"
+discord = "1.0.1"
+bs4 = "0.0.1"
+wikipedia-api = "0.5.4"
+wikipedia = "1.4.0"
+requests = "2.22.0"
+flask-login = "0.5.0"
+sqlalchemy-serializer = "1.3.4.2"
+flask-wtf = "0.14.3"
+gunicorn = "20.0.4"
+
+[tool.poetry.scripts]
+my-script = "WebServerProject.main:start"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
