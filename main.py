@@ -32,18 +32,18 @@ def load_user(user_id):
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/main', methods=['GET', 'POST'])
 def index():
-    """Страница "Главная" """
+    """Страница "Поиск" """
     form = InputForm()
     if form.validate_on_submit():
         message = form.message.data
         answer = request.form['req']
         return sent(message, answer)
-    return render_template("main.html", title='Главная', form=form, warning='')
+    return render_template("main.html", title='Поиск', form=form, warning='')
 
 
 @login_required
 def sent(message, answer):
-    """Обработка запросов с "Главной" """
+    """Обработка запросов с "Поиска" """
     answers = ['Вывод пользователей (введите users)', 'Книга(введите название)', 'Автор(введите имя и фамилию)']
     a = answers.index(answer)
     form = InputForm()
@@ -51,7 +51,7 @@ def sent(message, answer):
         if current_user.id == 1:
             return redirect('/request/users')
         else:
-            return render_template("main.html", title='Главная', form=form, warning='Недостаточно прав')
+            return render_template("main.html", title='Поиск', form=form, warning='Недостаточно прав')
     elif a == 1:
         session = db_session.create_session()
         book = session.query(Books).filter(Books.title == message).first()
