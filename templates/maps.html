@@ -2,18 +2,27 @@
 
 {% block content %}
 <h1>Места рождения писателей</h1>
-<div class="card border-success mb-3" style="max-width: 50rem;">
-    <div class="row no-gutters">
-    <div class="col-md-8">
-        <img src="{{ api }}" class="card-img-top" alt="Карта">
-    </div>
-        <div class="col-md-4">
-        <div class="card-body">
-            {% for author in authors%}
-            <h6>№Х{{author.id}} ~> {{place[loop.index - 1]}} ~> {{author.name}} {{author.surname}} ~> </h6>
-            {% endfor %}
-        </div>
-        </div>
-    </div>
+<img src="{{ api }}" class="rounded mx-auto d-block" style="width: 40rem;" alt="Карта">
+<div class="mx-auto" style="width: 40rem;">
+<table class="table table-light">
+    <thead>
+        <tr>
+          <th scope="col">№ на карте</th>
+          <th scope="col">Имя</th>
+          <th scope="col">Фамилия</th>
+          <th scope="col">Место</th>
+        </tr>
+    </thead>
+        <tbody>
+        {% for author in authors%}
+            <tr>
+              <th scope="row">{{author.id}}</th>
+              <td>{{author.name}}</td>
+              <td>{{author.surname}}</td>
+              <td>{{place[loop.index - 1]}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+</table>
 </div>
 {% endblock %}

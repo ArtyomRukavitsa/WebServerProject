@@ -227,7 +227,7 @@ def logout():
 @app.route('/maps')
 def maps():
     """Страница "Место рождений авторов" """
-    map_api_server = 'http://static-maps.yandex.ru/1.x/?37.620070,55.753630&size=450,450&spn=3.5,3.5&l=map'
+    map_api_server = 'http://static-maps.yandex.ru/1.x/?ll=45.507885,24.235970&z=1&l=map'
     places = []
     session = db_session.create_session()
     authors = session.query(Author).all()
@@ -271,6 +271,7 @@ def maps():
                 else:
                     map_api_server += f"~{toponym_coodrinates[0]},{toponym_coodrinates[1]},pm2rdm{author.id}"
                 break
+    print(map_api_server)
     return render_template('maps.html', title='Карта', authors=authors, api=map_api_server, place=places)
 
 
