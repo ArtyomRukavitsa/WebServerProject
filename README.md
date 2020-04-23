@@ -8,12 +8,8 @@
 1. Бот в Дискорде 
 2. Красивый вывод книг, авторов
 3. Разные права доступа (есть админ, есть пользователи)
-Планируем:
-1. Различные сортировки книг
-2. Корзина
-3. Система скидок
-4. API (Для пользования и на сайте, и в боте)
+4. Фильтрация и многое другое!
+Подробнее читайте в файле Документация.docx
 
 
  * Более подробно на Trello (+ разделение ролей): https://trello.com/b/TUc8kCNA/project-web
-[![Run on Repl.it](https://repl.it/badge/github/ArtyomRukavitsa/WebServerProject)](https://repl.it/github/ArtyomRukavitsa/WebServerProject)
