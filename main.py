@@ -36,7 +36,7 @@ def index():
         message = form.message.data
         answer = request.form['req']
         return sent(message, answer)
-    return render_template("main.html", title='Главная', form=form, warning='')
+    return render_template("main.html", title='Поиск', form=form, warning='')
 
 
 @login_required
@@ -49,7 +49,7 @@ def sent(message, answer):
         if current_user.id == 1:
             return redirect('/request/users')
         else:
-            return render_template("main.html", title='Главная', form=form, warning='Недостаточно прав')
+            return render_template("main.html", title='Поиск', form=form, warning='Недостаточно прав')
     elif a == 1:
         session = db_session.create_session()
         book = session.query(Books).filter(Books.title == message).first()
