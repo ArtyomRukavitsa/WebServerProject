@@ -65,7 +65,10 @@ def sent(message, answer):
         return render_template('books.html', title='Книга', err='Данной книги у нас нет в наличии')
     elif a == 2:
         session = db_session.create_session()
-        name, surname = message.split()
+        try:
+            name, surname = message.split()
+        except ValueError:
+            return render_template('authors.html', title='Автор', err='Вы нарушили формат. Напишите только имя и фамилию')
         author = session.query(Author).filter(Author.name == name, Author.surname == surname).first()
         if author:
             url = f'https://ru.wikipedia.org/wiki/{author.name} {author.surname}'
@@ -265,7 +268,6 @@ def maps():
                 toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
                 toponym_coodrinates = toponym["Point"]["pos"].split()
                 toponym_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
-                print(json_response)
                 places.append(toponym_address)
                 # Долгота и Широта :
                 if 'pt' not in map_api_server:
@@ -273,7 +275,6 @@ def maps():
                 else:
                     map_api_server += f"~{toponym_coodrinates[0]},{toponym_coodrinates[1]},pm2rdm{author.id}"
                 break
-    print(map_api_server)
     return render_template('maps.html', title='Карта', authors=authors, api=map_api_server, place=places)
 
 

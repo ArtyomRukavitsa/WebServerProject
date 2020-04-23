@@ -2,7 +2,9 @@
 
 
 {% block content %}
-{% if err %} <h3>{{ err }}</h3>
+{% if err %}
+<h3>{{ err }}</h3>
+<a href="/" class="btn btn-primary">Вернуться</a>
 {% else %}
  <h1>Library</h1>
  {% for author in authors%}
