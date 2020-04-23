@@ -5,13 +5,16 @@ import discord
 import os
 from bs4 import BeautifulSoup
 import wikipedia
-from data.users import User
 from data.books import Books
 from data.author import Author
 from data.genres import Genre
 from data import db_session
 import random
+from flask_ngrok import run_with_ngrok
+from flask import Flask
 
+app = Flask(__name__)
+run_with_ngrok(app)
 TOKEN = DC_TOKEN
 wikipedia.set_lang('ru')
 db_session.global_init("db/book_shop.sqlite")
@@ -76,7 +79,8 @@ class BookBot(commands.Cog):
         )
         embed.set_author(name='Что бот умеет?')
         embed.add_field(name='**!!find_shops**',
-                        value='Введи свой адрес, а бот вышлет карту с координатами четырех ближайших книжных магазинов',
+                        value='Введи свой адрес, а бот вышлет карту с координатами четырех ближайших книжных магазинов'
+                              '\n**Пример: !!find_shops Ломоносовский проспект, 16**',
                         inline=False)
         embed.add_field(name='**!!15_best_fantasy**',
                         value='Бот вышлет 15 лучших книг и их авторов в жанре фэнтези',
@@ -88,12 +92,15 @@ class BookBot(commands.Cog):
                         value='Введи автора, а бот вышлет короткую информацию о нем и ссылку в Википедии',
                         inline=False)
         embed.add_field(name='**!!wiki_book**',
-                        value='Введи название книги, а бот вышлет короткую информацию о ней и ссылку в Википедии',
+                        value='Введи название книги, а бот вышлет короткую информацию о ней и ссылку в Википедии'
+                              '\nПример **!!wiki_book И грянул гром**',
                         inline=False)
         embed.add_field(name='**!!add_book** (для админа)',
                         value='Админ может добавит книгу в наш магазин.'
                               '\n**Формат: фамилия автора, название, жанр,'
-                              'год создания, стоимость, url — ссылка на обложку книги**',
+                              'год создания, стоимость, url — ссылка на обложку книги**'
+                              '\nПример: **!!add_book Толстой, Воскресение, роман, 1899, 200, '
+                              'https://knijky.ru/sites/default/files/lev_tolstoj_voskresenie.jpg**',
                         inline=False)
         embed.add_field(name='**!!add_author** (для админа)',
                         value='Админ может добавить автора книг в наш магазин.'
@@ -110,7 +117,8 @@ class BookBot(commands.Cog):
                         value='Бот вышлет информацию о всех авторах из базы данных!',
                         inline=False)
         embed.add_field(name='**!!review**',
-                        value='Напиши название книги и узнай отзывы к ней! **Формат: с большой буквы без кавычек!**',
+                        value='Напиши название книги и узнай отзывы к ней! **Формат: с большой буквы без кавычек!**'
+                              '\nПример: **!!review Старик и море**',
                         inline=False)
         embed.add_field(name='**!!all_reviews**',
                         value='Бот вышлет все отзывы к книгам!',
@@ -250,36 +258,35 @@ class BookBot(commands.Cog):
     @commands.command(name='add_book')
     @commands.has_role('admin')
     async def add_book(self, channel, *content):
-        try:
-            surname, title, date, genre, price, url = ' '.join(content).split(',')
-            surname, title, date, genre, price, url = surname.strip(), title.strip(), \
-                                                      genre.strip(), date.strip(), price.strip(), url.strip()
-            session = db_session.create_session()
-            if session.query(Books).filter(Books.title == title).first():
-                await channel.send("Такая книга уже есть в БД")
-                return
-            if not session.query(Genre).filter(Genre.genre == genre).first():
-                await channel.send('Такого жанра нет в БД')
-                return
-            book = Books(
-                author_id=session.query(Author).filter(Author.surname == surname).first().id,
-                title=title,
-                date=date,
-                price=price,
-                genre_id=session.query(Genre).filter(Genre.genre == genre).first().id
-            )
-            response = requests.get(url)
-            len_books = len(session.query(Books).all())
-            photo = f'static/img/book{len_books + 1}.jpg'
-            with open(photo, 'wb') as imgfile:
-                imgfile.write(response.content)
-            book.cover = f'book{len_books + 1}.jpg'
-            session.add(book)
-            session.commit()
-            await channel.send('Ваша книга успешно добавлена')
-        except AttributeError:
-            await channel.send('Увы, но автора вашей книги не оказалось у нас в базе данных...'
-                               '\nДобавьте автора, а потом книгу!')
+        surname, title, date, genre, price, url = ' '.join(content).split(',')
+        surname, title, date, genre, price, url = surname.strip(), title.strip(), \
+                                                  genre.strip(), date.strip(), price.strip(), url.strip()
+        session = db_session.create_session()
+        if session.query(Books).filter(Books.title == title).first():
+            await channel.send("Такая книга уже есть в БД")
+            return
+        if not session.query(Genre).filter(Genre.genre == genre).first():
+            await channel.send('Такого жанра нет в БД')
+            return
+        if not session.query(Author).filter(Author.surname == surname).first():
+            await channel.send('Такого автора у нас нет в БД')
+            return
+        book = Books(
+            author_id=session.query(Author).filter(Author.surname == surname).first().id,
+            title=title,
+            date=date,
+            price=price,
+            genre_id=session.query(Genre).filter(Genre.genre == genre).first().id
+        )
+        response = requests.get(url)
+        len_books = len(session.query(Books).all())
+        photo = f'static/img/book{len_books + 1}.jpg'
+        with open(photo, 'wb') as imgfile:
+            imgfile.write(response.content)
+        book.cover = f'book{len_books + 1}.jpg'
+        session.add(book)
+        session.commit()
+        await channel.send('Ваша книга успешно добавлена')
 
     @commands.command(name='add_author')
     @commands.has_role('admin')
@@ -371,7 +378,7 @@ class BookBot(commands.Cog):
         await channel.send(embed=embed)
 
     @commands.command(name='all_reviews')
-    async def review(self, channel):
+    async def reviews(self, channel):
         session = db_session.create_session()
         books = session.query(Books).all()
         for book in books:
@@ -404,3 +411,4 @@ class BookBot(commands.Cog):
 bot.add_cog(BookBot(bot))
 print('Bot started')
 bot.run(TOKEN)
+app.run()

@@ -13,8 +13,10 @@ import datetime
 from data.card_algs import luhn_algorithm
 import os
 from data.auth_data import artem, natasha, project
+from flask_ngrok import run_with_ngrok
 
 app = Flask(__name__)
+run_with_ngrok(app)
 app.config['SECRET_KEY'] = 'WEB_SERVER_project'
 login_manager = LoginManager()
 login_manager.init_app(app)
